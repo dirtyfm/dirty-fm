@@ -1,6 +1,24 @@
 import type { Metadata } from "next";
-import { ArchivedDirtyTVArchive, SendSignalCTA } from "@/components/dirty";
+import {
+  ArchivedDirtyTVArchive,
+  DirtyButton,
+  DirtyTVPlayer,
+  SectionStamp,
+  SendSignalCTA
+} from "@/components/dirty";
 import { getArchivedDirtyTvPosts } from "@/data/dirtyTvArchivedPosts";
+import {
+  getFeaturedVideo,
+  getVideoCategories,
+  getVideos,
+  getVideosByCategory
+} from "@/data/videos";
+
+type DirtyTVPageProps = {
+  searchParams?: Promise<{
+    category?: string;
+  }>;
+};
 
 export const metadata: Metadata = {
   title: "Dirty TV",
@@ -8,9 +26,20 @@ export const metadata: Metadata = {
     "Dirty TV from DirtyFM: YouTube video trash, public-access chaos, raw clips, and unapproved transmissions from Drift."
 };
 
-export default function DirtyTVPage() {
+export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
+  const params = await searchParams;
+  const categories = getVideoCategories();
+  const requestedCategory = params?.category;
+  const selectedCategory = categories.includes(requestedCategory ?? "")
+    ? requestedCategory
+    : undefined;
+  const videos = getVideosByCategory(selectedCategory);
+  const allVideos = getVideos();
+  const featuredVideo = selectedCategory
+    ? videos[0] ?? getFeaturedVideo()
+    : getFeaturedVideo();
   const posts = getArchivedDirtyTvPosts();
-  const videoCount = posts.reduce((count, post) => count + post.videos.length, 0);
+  const archivedVideoCount = posts.reduce((count, post) => count + post.videos.length, 0);
 
   return (
     <div className="grid gap-9 min-[760px]:gap-12">
@@ -25,13 +54,46 @@ export default function DirtyTVPage() {
             Watch the Damage.
           </h1>
           <p className="max-w-3xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
-            Old DirtyTV files from the dirty signal: {posts.length} posts,
+            Current Dirty TV is wired back into the wall: {allVideos.length} active
+            clips in the player, plus the old tape shelf below with {posts.length}
             {" "}
-            {videoCount} embedded clips, no rewritten dates, no cleaned-up titles,
-            no fake comment bodies.
+            legacy posts and {archivedVideoCount} embedded clips. No fake polish,
+            no cleaned-up archive bodies.
           </p>
         </div>
       </section>
+
+      <section className="grid gap-4">
+        <div className="flex flex-col gap-3 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
+          <SectionStamp label="Tune the Garbage" kicker="Categories" tone="yellow" />
+          <p className="max-w-xl font-utility text-xs font-bold uppercase text-dirty-gray">
+            Pick a clip bucket. The feed gets narrower, not respectable.
+          </p>
+        </div>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 min-[760px]:mx-0 min-[760px]:flex-wrap min-[760px]:overflow-visible min-[760px]:px-0 min-[760px]:pb-0">
+          <DirtyButton
+            href="/dirty-tv"
+            variant={!selectedCategory ? "primary" : "ghost"}
+          >
+            All Clips
+          </DirtyButton>
+          {categories.map((category) => (
+            <DirtyButton
+              href={`/dirty-tv?category=${encodeURIComponent(category)}`}
+              key={category}
+              variant={selectedCategory === category ? "primary" : "ghost"}
+            >
+              {category}
+            </DirtyButton>
+          ))}
+        </div>
+      </section>
+
+      <DirtyTVPlayer
+        featuredVideo={featuredVideo}
+        selectedCategory={selectedCategory}
+        videos={videos}
+      />
 
       <ArchivedDirtyTVArchive posts={posts} />
 

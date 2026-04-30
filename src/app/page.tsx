@@ -15,6 +15,12 @@ import {
   getArchivedDirtyTvHomePreviewCards
 } from "@/data/dirtyTvArchivedPosts";
 import { formatPostDate } from "@/data/posts";
+import {
+  formatVideoDate,
+  getFeaturedVideo,
+  getVideos,
+  getYoutubeThumbnailUrl
+} from "@/data/videos";
 import { getPublicDirtyNewsPosts } from "@/lib/db/posts";
 
 const dirtyFeed = [
@@ -44,6 +50,8 @@ function getPostDateLabel(post: Awaited<ReturnType<typeof getPublicDirtyNewsPost
 }
 
 export default async function Home() {
+  const featuredVideo = getFeaturedVideo();
+  const currentVideos = getVideos().slice(0, 3);
   const dirtyTvPreviewCards = getArchivedDirtyTvHomePreviewCards();
   const newsPosts = (await getPublicDirtyNewsPosts()).slice(0, 3).map((post) => ({
     title: post.title,
@@ -108,19 +116,37 @@ export default async function Home() {
         </div>
       </section>
 
-      <LatestTransmission
-        title="Latest Transmission: The Mic Is Still Hot"
-        description="The newest hit from the dirty signal: rough talk, damaged logic, useful static, and a mic that should probably be supervised by nobody."
-        href="/dirty-tv"
-        secondaryHref="/dirty-news"
-        secondaryActionLabel="Read the Fallout"
-        meta={[
-          "File Type: Video",
-          "Status: Unapproved",
-          "Host: Drift",
-          "Route: Dirty TV"
-        ]}
-      />
+      {featuredVideo ? (
+        <LatestTransmission
+          title={featuredVideo.title}
+          description={featuredVideo.description}
+          href="/dirty-tv"
+          primaryActionLabel="Watch the Damage"
+          secondaryHref={`/dirty-tv?category=${encodeURIComponent(featuredVideo.category)}`}
+          secondaryActionLabel="Tune This Bucket"
+          meta={[
+            `File Type: ${featuredVideo.category}`,
+            `Status: ${featuredVideo.status}`,
+            `Host: ${featuredVideo.host}`,
+            `Filed: ${formatVideoDate(featuredVideo.publishedAt)}`
+          ]}
+        />
+      ) : (
+        <LatestTransmission
+          title="Latest Transmission: Static Ate the Tape"
+          description="The Dirty TV drawer is empty right now. No clip, no embed, no polite explanation. The signal will cough something up when it is good and ready."
+          href="/dirty-tv"
+          primaryActionLabel="Check Dirty TV"
+          secondaryHref="/contact"
+          secondaryActionLabel="Send a Clip"
+          meta={[
+            "File Type: Video",
+            "Status: Missing Tape",
+            "Host: Drift",
+            "Filed: Unknown"
+          ]}
+        />
+      )}
 
       <StaticPanel
         label="What the Hell Is DirtyFM?"
@@ -198,10 +224,38 @@ export default async function Home() {
             </DirtyButton>
           </div>
         </div>
-        <div className="grid gap-4 min-[760px]:grid-cols-2 min-[1120px]:grid-cols-3">
-          {dirtyTvPreviewCards.map((video) => (
-            <VideoTrashCard key={video.title} {...video} />
-          ))}
+        {currentVideos.length > 0 ? (
+          <div className="grid gap-4 min-[760px]:grid-cols-2 min-[1120px]:grid-cols-3">
+            {currentVideos.map((video) => (
+              <VideoTrashCard
+                category={video.category}
+                href={`/dirty-tv?category=${encodeURIComponent(video.category)}`}
+                key={video.id}
+                runtime={`${video.host} / ${formatVideoDate(video.publishedAt)}`}
+                status={video.status}
+                thumbnailUrl={getYoutubeThumbnailUrl(video.youtubeId)}
+                title={video.title}
+              />
+            ))}
+          </div>
+        ) : (
+          <StaticPanel label="Empty Tape Shelf" title="No Current Video Static Yet." tone="yellow">
+            <p className="max-w-2xl text-lg leading-snug">
+              The current Dirty TV player has no clips filed. The old archive
+              is still below, coughing dust and bad decisions.
+            </p>
+          </StaticPanel>
+        )}
+
+        <div className="grid gap-3">
+          <p className="font-utility text-xs font-black uppercase tracking-[0.08em] text-dirty-yellow">
+            From the old tape shelf
+          </p>
+          <div className="grid gap-4 min-[760px]:grid-cols-2 min-[1120px]:grid-cols-3">
+            {dirtyTvPreviewCards.slice(0, 3).map((video) => (
+              <VideoTrashCard key={video.title} {...video} />
+            ))}
+          </div>
         </div>
       </section>
 
