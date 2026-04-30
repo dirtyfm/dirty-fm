@@ -60,6 +60,7 @@ export function parseDirtyfmAuthMode(env: RuntimeEnv = process.env): DirtyfmAuth
     );
   }
 
+  // Legacy local fallback only. Vercel production must set DIRTYFM_AUTH_MODE explicitly.
   return "supabase";
 }
 
@@ -79,6 +80,7 @@ export function parseDirtyfmContentBackend(
     );
   }
 
+  // Legacy local fallback only. Current production is DIRTYFM_CONTENT_BACKEND=cloudflare-kv.
   return authMode === "local" ? "cloudflare-kv" : "supabase";
 }
 

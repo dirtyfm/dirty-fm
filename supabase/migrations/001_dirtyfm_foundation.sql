@@ -1,5 +1,5 @@
--- DirtyFM database/auth foundation for Supabase.
--- Run this in the Supabase SQL editor or through the Supabase CLI.
+-- DirtyFM database/auth foundation for the optional Supabase path.
+-- Current production uses Cloudflare KV/local auth; run this only when selecting Supabase.
 
 create extension if not exists pgcrypto;
 

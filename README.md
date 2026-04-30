@@ -55,7 +55,7 @@ CLOUDFLARE_KV_NAMESPACE_ID
 CLOUDFLARE_API_TOKEN
 ```
 
-Supabase variables may exist for future backend work, but production should not unexpectedly use Supabase while `DIRTYFM_CONTENT_BACKEND=cloudflare-kv`.
+Supabase variables may exist for future backend work, but production should not use Supabase while `DIRTYFM_AUTH_MODE=local` and `DIRTYFM_CONTENT_BACKEND=cloudflare-kv`. Treat Supabase as retained, inactive code unless a deployment explicitly selects the Supabase modes.
 
 ## Cloudflare Notes
 
@@ -136,7 +136,7 @@ npm run check
 
 ## Environment File
 
-Copy `.env.example` for local setup and fill in only what your current mode needs.
+Copy `.env.example` for local setup and fill in only what your current mode needs. The file lists the active production Cloudflare KV/local auth variables first; Supabase variables are optional and reserved for an explicit future switch.
 
 For the current Vercel production shape:
 
@@ -152,12 +152,12 @@ Use local operator credentials for Signal Control and Cloudflare KV REST credent
 Content backend selection lives in `src/lib/contentBackend.ts`.
 
 - `cloudflare-kv` uses `src/lib/kv/*`.
-- `supabase` uses `src/lib/db/*`.
+- `supabase` uses `src/lib/db/*` only when `DIRTYFM_CONTENT_BACKEND=supabase`.
 
 Auth mode selection lives in `src/lib/authMode.ts`.
 
 - `local` uses local Signal Control auth.
-- `supabase` uses Supabase auth/admin profile checks.
+- `supabase` uses Supabase auth/admin profile checks only when `DIRTYFM_AUTH_MODE=supabase`.
 
 Runtime config validation lives in `src/lib/runtimeConfig.ts`.
 
@@ -166,6 +166,7 @@ Runtime config validation lives in `src/lib/runtimeConfig.ts`.
 - Production/Vercel runtimes require explicit mode values.
 - Vercel production with `DIRTYFM_CONTENT_BACKEND=cloudflare-kv` requires the Cloudflare KV REST variables listed above.
 - `DIRTYFM_AUTH_MODE=local` requires the local operator email, passphrase hash, and session secret listed above.
+- Unset local development modes keep the legacy Supabase fallback. Production must not rely on that fallback.
 
 Keep both paths available unless a future migration intentionally removes one.
 

@@ -5,6 +5,7 @@ import { getValidatedDirtyfmContentBackend } from "@/lib/runtimeConfig";
 export type { DirtyfmContentBackend };
 
 export function getDirtyfmContentBackend(): DirtyfmContentBackend {
+  // Production selects Cloudflare KV explicitly; Supabase remains available only by mode.
   return getValidatedDirtyfmContentBackend();
 }
 

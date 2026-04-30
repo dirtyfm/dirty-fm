@@ -46,6 +46,7 @@ async function getAdminContext() {
   }
 
   const profile = await requireAdmin(accessToken);
+  // KV production keeps Supabase action code retained but inactive until the backend mode changes.
   const supabase = isKvContentBackend() ? null : createSupabaseServerClient(accessToken);
 
   return { profile, supabase };
