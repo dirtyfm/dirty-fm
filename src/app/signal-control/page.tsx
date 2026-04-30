@@ -261,22 +261,7 @@ function SubmissionList({ submissions }: { submissions: AdminDashboardPostSubmis
                 <input className={adminFieldBase} defaultValue={submission.admin_notes ?? ""} name="admin_notes" />
               </label>
             </div>
-            <div className="flex flex-wrap gap-2">
-            <button className="button button-secondary" type="submit">
-                Save Edit
-              </button>
-            </div>
-          </form>
-          <form action={publishPostSubmission} className="mt-3 grid gap-3 border border-[rgba(214,184,74,0.3)] bg-dirty-black/35 p-3">
-            <input name="id" type="hidden" value={submission.id} />
-            <input name="name" type="hidden" value={submission.name} />
-            <input name="email" type="hidden" value={submission.email} />
-            <input name="title" type="hidden" value={submission.title} />
-            <input name="category" type="hidden" value={submission.category} />
-            <input name="body" type="hidden" value={submission.body} />
-            <input name="source_url" type="hidden" value={submission.source_url ?? ""} />
-            <input name="admin_notes" type="hidden" value={submission.admin_notes ?? ""} />
-            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="grid gap-3 border border-[rgba(214,184,74,0.3)] bg-dirty-black/35 p-3 min-[760px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <label className="grid gap-1">
                 <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
                   Post Author
@@ -291,10 +276,13 @@ function SubmissionList({ submissions }: { submissions: AdminDashboardPostSubmis
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="button button-secondary" name="intent" type="submit" value="draft">
+              <button className="button button-secondary" type="submit">
+                Save Edit
+              </button>
+              <button className="button button-secondary" formAction={publishPostSubmission} name="intent" type="submit" value="draft">
                 Approve as Draft
               </button>
-              <button className="button button-primary" name="intent" type="submit" value="publish">
+              <button className="button button-primary" formAction={publishPostSubmission} name="intent" type="submit" value="publish">
                 Publish File
               </button>
             </div>
