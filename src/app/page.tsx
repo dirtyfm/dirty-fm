@@ -17,11 +17,11 @@ import {
 import { formatPostDate } from "@/data/posts";
 import {
   formatVideoDate,
-  getFeaturedVideo,
-  getVideos,
   getYoutubeThumbnailUrl
 } from "@/data/videos";
 import { getPublicDirtyNewsPosts } from "@/lib/db/posts";
+import { getPublicFeaturedVideo, getPublicVideos } from "@/lib/db/videos";
+import { getKvHomeSettings } from "@/lib/kv/contentStore";
 
 const dirtyFeed = [
   "LIVE WIRE: Drift is still not applying for approval",
@@ -45,13 +45,16 @@ const driftFiles = [
   }
 ];
 
+export const dynamic = "force-dynamic";
+
 function getPostDateLabel(post: Awaited<ReturnType<typeof getPublicDirtyNewsPosts>>[number]) {
   return post.archive?.publishedAtOriginal ?? formatPostDate(post.publishedAt);
 }
 
 export default async function Home() {
-  const featuredVideo = getFeaturedVideo();
-  const currentVideos = getVideos().slice(0, 3);
+  const homeSettings = await getKvHomeSettings();
+  const featuredVideo = await getPublicFeaturedVideo();
+  const currentVideos = (await getPublicVideos()).slice(0, 3);
   const dirtyTvPreviewCards = getArchivedDirtyTvHomePreviewCards();
   const newsPosts = (await getPublicDirtyNewsPosts()).slice(0, 3).map((post) => ({
     title: post.title,
@@ -72,14 +75,12 @@ export default async function Home() {
         />
         <div className="relative grid items-end gap-8 min-[900px]:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="grid gap-6">
-            <p className="eyebrow">Hero / Dirty Signal</p>
+            <p className="eyebrow">{homeSettings.hero_eyebrow}</p>
             <h1 className="max-w-[10ch] font-display text-[clamp(3.3rem,13vw,8.8rem)] font-black uppercase leading-[0.9] text-dirty-ash">
-              DirtyFM Is the Signal They Forgot to Kill.
+              {homeSettings.hero_title}
             </h1>
             <p className="max-w-3xl text-[clamp(1.1rem,2.5vw,1.5rem)] leading-snug text-dirty-ash">
-              Raw radio, prank-call chaos, dark comedy, anti-control noise,
-              and random fucking bullshit from Drift and whoever gets close
-              enough to the mic.
+              {homeSettings.hero_body}
             </p>
             <div className="flex flex-col gap-3 min-[500px]:flex-row min-[500px]:flex-wrap">
               <DirtyButton href="/dirty-tv">Watch Latest Video</DirtyButton>
@@ -95,7 +96,7 @@ export default async function Home() {
           <aside className="grid gap-4 border-l-8 border-dirty-red bg-dirty-purple/80 p-5 shadow-[0.45rem_0.45rem_0_rgba(0,0,0,0.36)]">
             <SectionStamp label="On Air" kicker="No Permission" tone="red" />
             <p className="font-display text-[clamp(2rem,7vw,3.6rem)] font-black uppercase leading-none text-dirty-ash">
-              Pirate radio for the unmanageable.
+              {homeSettings.hero_aside}
             </p>
             <p className="file-tape">Frequency: busted mic / basement wire / no PR handler</p>
             <dl className="grid gap-2 font-utility text-xs font-black uppercase">

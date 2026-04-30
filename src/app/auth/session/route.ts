@@ -5,12 +5,16 @@ import {
   getAccessTokenMaxAge,
   getRefreshTokenMaxAge
 } from "@/lib/authSession";
+import { isLocalAuthMode } from "@/lib/authMode";
 import { requireAdmin } from "@/lib/db/admin";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
+import { authenticateLocalOperator, getLocalSessionMaxAge } from "@/lib/localAuth";
 
 type SessionPayload = {
   accessToken?: unknown;
+  email?: unknown;
   expiresIn?: unknown;
+  passphrase?: unknown;
   refreshToken?: unknown;
 };
 
@@ -23,6 +27,51 @@ export async function POST(request: NextRequest) {
     payload = (await request.json()) as SessionPayload;
   } catch {
     return NextResponse.json({ error: "Bad session payload." }, { status: 400 });
+  }
+
+  if (isLocalAuthMode()) {
+    if (typeof payload.email !== "string" || typeof payload.passphrase !== "string") {
+      return NextResponse.json({ error: "Missing Signal Control credentials." }, { status: 400 });
+    }
+
+    const token = await authenticateLocalOperator(payload.email, payload.passphrase);
+
+    if (!token) {
+      return NextResponse.json({ error: "Signal Control rejected that login." }, { status: 401 });
+    }
+
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set(DIRTYFM_ACCESS_TOKEN_COOKIE, token, {
+      httpOnly: true,
+      maxAge: getLocalSessionMaxAge(),
+      path: "/",
+      sameSite: "lax",
+      secure: secureCookie
+    });
+    response.cookies.delete(DIRTYFM_REFRESH_TOKEN_COOKIE);
+    return response;
+  }
+
+  if (
+    typeof payload.accessToken !== "string" &&
+    typeof payload.email === "string" &&
+    typeof payload.passphrase === "string"
+  ) {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: payload.email,
+      password: payload.passphrase
+    });
+
+    if (error || !data.session) {
+      return NextResponse.json({ error: "Signal Control rejected that login." }, { status: 401 });
+    }
+
+    payload = {
+      accessToken: data.session.access_token,
+      expiresIn: data.session.expires_in,
+      refreshToken: data.session.refresh_token
+    };
   }
 
   if (typeof payload.accessToken !== "string" || payload.accessToken.length < 20) {

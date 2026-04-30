@@ -6,6 +6,7 @@ import { SignalControlLogout } from "@/components/admin/SignalControlLogout";
 import { SectionStamp, StaticPanel, TickerBar } from "@/components/dirty";
 import { AdminAuthorizationError } from "@/lib/authGuards";
 import { DIRTYFM_ACCESS_TOKEN_COOKIE } from "@/lib/authSession";
+import { isKvContentBackend } from "@/lib/contentBackend";
 import { requireAdmin } from "@/lib/db/admin";
 import {
   getAdminDashboardData,
@@ -14,18 +15,24 @@ import {
   type AdminDashboardPost,
   type AdminDashboardPostSubmission
 } from "@/lib/db/adminDashboard";
+import { getKvAdminVideos, getKvHomeSettings } from "@/lib/kv/contentStore";
 import { postSubmissionCategories } from "@/lib/contentValidation";
 import {
   contactSubmissionStatuses,
   postSubmissionStatuses
 } from "@/lib/submissionWorkflows";
 import {
-  deleteContactSubmission,
   deleteComment,
+  deleteContactSubmission,
+  deletePost,
   deletePostSubmission,
+  deleteVideo,
   hideComment,
   publishPostSubmission,
   restoreComment,
+  savePost,
+  saveVideo,
+  updateHomeSettings,
   updateContactSubmission,
   updatePostSubmission
 } from "./actions";
@@ -112,6 +119,162 @@ function StatCard({ label, value }: { label: string; value: number }) {
         {value}
       </p>
     </article>
+  );
+}
+
+function HomeSettingsPanel({
+  settings
+}: {
+  settings: Awaited<ReturnType<typeof getKvHomeSettings>>;
+}) {
+  return (
+    <form action={updateHomeSettings} className="archive-card grid gap-3">
+      <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
+        <label className="grid gap-1">
+          <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+            Hero Eyebrow
+          </span>
+          <input className={adminFieldBase} defaultValue={settings.hero_eyebrow} name="hero_eyebrow" />
+        </label>
+        <label className="grid gap-1">
+          <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+            Side Callout
+          </span>
+          <input className={adminFieldBase} defaultValue={settings.hero_aside} name="hero_aside" />
+        </label>
+      </div>
+      <label className="grid gap-1">
+        <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+          Hero Title
+        </span>
+        <textarea className={adminFieldBase} defaultValue={settings.hero_title} name="hero_title" rows={2} />
+      </label>
+      <label className="grid gap-1">
+        <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+          Hero Body
+        </span>
+        <textarea className={adminFieldBase} defaultValue={settings.hero_body} name="hero_body" rows={3} />
+      </label>
+      <button className="button button-primary justify-self-start" type="submit">
+        Save Front Signal
+      </button>
+    </form>
+  );
+}
+
+function PostEditorList({ posts }: { posts: AdminDashboardPost[] }) {
+  return (
+    <div className="grid gap-4">
+      <form action={savePost} className="archive-card grid gap-3">
+        <p className="card-label">Create Dirty News File</p>
+        <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_13rem_10rem]">
+          <input className={adminFieldBase} name="title" placeholder="Title" />
+          <select className={adminFieldBase} defaultValue="Dirty News" name="category">
+            {postSubmissionCategories.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+          <select className={adminFieldBase} defaultValue="draft" name="status">
+            <option value="draft">draft</option>
+            <option value="published">published</option>
+            <option value="archived">archived</option>
+          </select>
+        </div>
+        <textarea className={adminFieldBase} name="body" placeholder="Body" rows={5} />
+        <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <input className={adminFieldBase} name="author" placeholder="Author" defaultValue="DirtyFM Desk" />
+          <input className={adminFieldBase} name="excerpt" placeholder="Excerpt override" />
+        </div>
+        <button className="button button-primary justify-self-start" type="submit">
+          File New Post
+        </button>
+      </form>
+
+      {posts.map((post) => (
+        <article className="archive-card" key={post.id}>
+          <form action={savePost} className="grid gap-3">
+            <input name="id" type="hidden" value={post.id} />
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_13rem_10rem]">
+              <input className={adminFieldBase} defaultValue={post.title} name="title" />
+              <select className={adminFieldBase} defaultValue={post.category} name="category">
+                {postSubmissionCategories.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              <select className={adminFieldBase} defaultValue={post.status} name="status">
+                <option value="draft">draft</option>
+                <option value="published">published</option>
+                <option value="archived">archived</option>
+              </select>
+            </div>
+            <input className={adminFieldBase} defaultValue={post.slug} name="slug" />
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <input className={adminFieldBase} defaultValue={post.author} name="author" />
+              <input className={adminFieldBase} defaultValue={post.published_at ?? ""} name="published_at" />
+            </div>
+            <textarea className={adminFieldBase} defaultValue={post.body} name="body" rows={4} />
+            <input className={adminFieldBase} defaultValue={post.excerpt} name="excerpt" placeholder="Excerpt override" />
+            <div className="flex flex-wrap gap-2">
+              <button className="button button-secondary" type="submit">Save Post</button>
+              <Link className="button button-secondary" href={`/dirty-news/${post.slug}`}>Open File</Link>
+            </div>
+          </form>
+          <form action={deletePost} className="mt-3">
+            <input name="id" type="hidden" value={post.id} />
+            <button className="danger-link" type="submit">Delete Post</button>
+          </form>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function VideoEditorList({
+  videos
+}: {
+  videos: Awaited<ReturnType<typeof getKvAdminVideos>>;
+}) {
+  const statuses = ["featured", "unapproved", "raw clip", "archive file"];
+
+  return (
+    <div className="grid gap-4">
+      {[null, ...videos].map((video, index) => (
+        <article className="archive-card" key={video?.id ?? "new-video"}>
+          <form action={saveVideo} className="grid gap-3">
+            {video ? <input name="id" type="hidden" value={video.id} /> : null}
+            <p className="card-label">{video ? "Edit Video File" : "Create Video File"}</p>
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_12rem_11rem]">
+              <input className={adminFieldBase} defaultValue={video?.title ?? ""} name="title" placeholder="Title" />
+              <input className={adminFieldBase} defaultValue={video?.youtube_id ?? ""} name="youtube_id" placeholder="YouTube ID" />
+              <select className={adminFieldBase} defaultValue={video?.status ?? "archive file"} name="status">
+                {statuses.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+            <textarea className={adminFieldBase} defaultValue={video?.description ?? ""} name="description" placeholder="Description" rows={3} />
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_11rem]">
+              <input className={adminFieldBase} defaultValue={video?.category ?? "Video Trash"} name="category" placeholder="Category" />
+              <input className={adminFieldBase} defaultValue={video?.host ?? "Drift"} name="host" placeholder="Host" />
+              <input className={adminFieldBase} defaultValue={video?.published_at ?? new Date().toISOString()} name="published_at" />
+            </div>
+            <label className="flex items-center gap-2 font-utility text-xs font-black uppercase text-dirty-yellow">
+              <input defaultChecked={video?.is_featured ?? index === 0} name="is_featured" type="checkbox" />
+              Featured
+            </label>
+            <button className="button button-secondary justify-self-start" type="submit">
+              {video ? "Save Video" : "File New Video"}
+            </button>
+          </form>
+          {video ? (
+            <form action={deleteVideo} className="mt-3">
+              <input name="id" type="hidden" value={video.id} />
+              <button className="danger-link" type="submit">Delete Video</button>
+            </form>
+          ) : null}
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -422,6 +585,9 @@ export default async function SignalControlPage() {
   }
 
   const { dashboard, profile } = verified;
+  const kvEnabled = isKvContentBackend();
+  const homeSettings = kvEnabled ? await getKvHomeSettings() : null;
+  const videos = kvEnabled ? await getKvAdminVideos() : [];
 
   return (
     <div className="grid gap-9 min-[760px]:gap-12">
@@ -457,9 +623,11 @@ export default async function SignalControlPage() {
         aria-label="Signal Control sections"
       >
         <a className="nav-link" href="#overview">Overview</a>
+        {kvEnabled ? <a className="nav-link" href="#front-signal">Front Signal</a> : null}
         <a className="nav-link" href="#incoming-signals">Signals</a>
         <a className="nav-link" href="#pending-dirty-news">Pending News</a>
-        <a className="nav-link" href="#live-files">Live Files</a>
+        <a className="nav-link" href="#live-files">Posts</a>
+        {kvEnabled ? <a className="nav-link" href="#video-trash">Videos</a> : null}
         <a className="nav-link" href="#open-mic-comments">Comments</a>
       </nav>
 
@@ -473,6 +641,13 @@ export default async function SignalControlPage() {
         </div>
       </section>
 
+      {homeSettings ? (
+        <section className="grid gap-4" id="front-signal">
+          <SectionStamp label="Front Signal" kicker="Homepage Copy" tone="red" />
+          <HomeSettingsPanel settings={homeSettings} />
+        </section>
+      ) : null}
+
       <section className="grid gap-4" id="incoming-signals">
         <SectionStamp label="Incoming Signals" kicker="Contact Messages" tone="red" />
         <ContactList contacts={dashboard.contacts} />
@@ -485,8 +660,15 @@ export default async function SignalControlPage() {
 
       <section className="grid gap-4" id="live-files">
         <SectionStamp label="Live Files" kicker="Posts" tone="yellow" />
-        <PostList posts={dashboard.posts} />
+        {kvEnabled ? <PostEditorList posts={dashboard.posts} /> : <PostList posts={dashboard.posts} />}
       </section>
+
+      {kvEnabled ? (
+        <section className="grid gap-4" id="video-trash">
+          <SectionStamp label="Video Trash" kicker="Dirty TV Files" tone="green" />
+          <VideoEditorList videos={videos} />
+        </section>
+      ) : null}
 
       <section className="grid gap-4" id="open-mic-comments">
         <SectionStamp label="Open Mic Comments" kicker="Recent Comments" tone="red" />

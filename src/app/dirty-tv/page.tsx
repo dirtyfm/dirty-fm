@@ -8,11 +8,11 @@ import {
 } from "@/components/dirty";
 import { getArchivedDirtyTvPosts } from "@/data/dirtyTvArchivedPosts";
 import {
-  getFeaturedVideo,
-  getVideoCategories,
-  getVideos,
-  getVideosByCategory
-} from "@/data/videos";
+  getPublicFeaturedVideo,
+  getPublicVideoCategories,
+  getPublicVideos,
+  getPublicVideosByCategory
+} from "@/lib/db/videos";
 
 type DirtyTVPageProps = {
   searchParams?: Promise<{
@@ -28,16 +28,16 @@ export const metadata: Metadata = {
 
 export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
   const params = await searchParams;
-  const categories = getVideoCategories();
+  const categories = await getPublicVideoCategories();
   const requestedCategory = params?.category;
   const selectedCategory = categories.includes(requestedCategory ?? "")
     ? requestedCategory
     : undefined;
-  const videos = getVideosByCategory(selectedCategory);
-  const allVideos = getVideos();
+  const videos = await getPublicVideosByCategory(selectedCategory);
+  const allVideos = await getPublicVideos();
   const featuredVideo = selectedCategory
-    ? videos[0] ?? getFeaturedVideo()
-    : getFeaturedVideo();
+    ? videos[0] ?? await getPublicFeaturedVideo()
+    : await getPublicFeaturedVideo();
   const posts = getArchivedDirtyTvPosts();
   const archivedVideoCount = posts.reduce((count, post) => count + post.videos.length, 0);
 

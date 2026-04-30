@@ -1,10 +1,22 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import { assertAdminProfile } from "@/lib/authGuards";
+import { isLocalAuthMode } from "@/lib/authMode";
+import { verifyLocalSessionToken } from "@/lib/localAuth";
 
 export async function requireAdmin(accessToken: string) {
   if (!accessToken) {
     throw new Error("Admin access requires an authenticated Supabase session.");
+  }
+
+  if (isLocalAuthMode()) {
+    const profile = await verifyLocalSessionToken(accessToken);
+
+    if (!profile) {
+      throw new Error("Admin access requires a valid local Signal Control session.");
+    }
+
+    return profile;
   }
 
   const supabase = createSupabaseServerClient(accessToken);

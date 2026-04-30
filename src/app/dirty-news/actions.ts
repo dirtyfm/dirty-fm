@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { isKvContentBackend } from "@/lib/contentBackend";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import { createComment, createPostSubmission } from "@/lib/db/submissions";
+import { createKvComment, createKvPostSubmission } from "@/lib/kv/contentStore";
 import type { CommentInput, PostSubmissionInput } from "@/lib/contentValidation";
 import {
   checkHoneypot,
@@ -32,8 +34,9 @@ export async function submitDirtyNewsSignal(
     return { errors: { body: "Too much static too fast. Wait a minute and try again." }, ok: false };
   }
 
-  const supabase = createSupabaseServerClient();
-  const result = await createPostSubmission(supabase, input);
+  const result = isKvContentBackend()
+    ? await createKvPostSubmission(input)
+    : await createPostSubmission(createSupabaseServerClient(), input);
 
   if (!result.ok) {
     return { errors: result.errors, ok: false };
@@ -56,8 +59,9 @@ export async function submitDirtyNewsComment(
     return { errors: { body: "Too much static too fast. Wait a minute and try again." }, ok: false };
   }
 
-  const supabase = createSupabaseServerClient();
-  const result = await createComment(supabase, input);
+  const result = isKvContentBackend()
+    ? await createKvComment(input)
+    : await createComment(createSupabaseServerClient(), input);
 
   if (!result.ok) {
     return { errors: result.errors, ok: false };

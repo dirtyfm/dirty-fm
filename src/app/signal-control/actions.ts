@@ -3,9 +3,24 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { DIRTYFM_ACCESS_TOKEN_COOKIE } from "@/lib/authSession";
+import { isKvContentBackend } from "@/lib/contentBackend";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import { requireAdmin } from "@/lib/db/admin";
 import { validatePostSubmission } from "@/lib/contentValidation";
+import {
+  deleteKvComment,
+  deleteKvContactSubmission,
+  deleteKvPost,
+  deleteKvPostSubmission,
+  deleteKvVideo,
+  publishKvPostSubmission,
+  setKvCommentHidden,
+  updateKvContactSubmission,
+  updateKvHomeSettings,
+  updateKvPostSubmission,
+  upsertKvPost,
+  upsertKvVideo
+} from "@/lib/kv/contentStore";
 import {
   cleanAdminNotes,
   createDirtyNewsExcerpt,
@@ -28,7 +43,7 @@ async function getAdminContext() {
   }
 
   const profile = await requireAdmin(accessToken);
-  const supabase = createSupabaseServerClient(accessToken);
+  const supabase = isKvContentBackend() ? null : createSupabaseServerClient(accessToken);
 
   return { profile, supabase };
 }
@@ -52,6 +67,16 @@ export async function updateContactSubmission(formData: FormData) {
     throw new Error("Invalid contact submission status.");
   }
 
+  if (isKvContentBackend()) {
+    await updateKvContactSubmission(id, status, formData.get("admin_notes"), profile.user_id);
+    revalidatePath("/signal-control");
+    return;
+  }
+
+  if (!supabase) {
+    throw new Error("Supabase admin client missing.");
+  }
+
   const { error } = await supabase
     .from("contact_submissions")
     .update({
@@ -72,6 +97,17 @@ export async function updateContactSubmission(formData: FormData) {
 export async function deleteContactSubmission(formData: FormData) {
   const { supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
+
+  if (isKvContentBackend()) {
+    await deleteKvContactSubmission(id);
+    revalidatePath("/signal-control");
+    return;
+  }
+
+  if (!supabase) {
+    throw new Error("Supabase admin client missing.");
+  }
+
   const { error } = await supabase.from("contact_submissions").delete().eq("id", id);
 
   if (error) {
@@ -90,14 +126,31 @@ export async function updatePostSubmission(formData: FormData) {
     throw new Error("Invalid Dirty News submission status.");
   }
 
-  const validated = validatePostSubmission({
+  const input = {
     body: getRequiredString(formData, "body"),
     category: getRequiredString(formData, "category"),
     email: getRequiredString(formData, "email"),
     name: getRequiredString(formData, "name"),
     sourceUrl: (formData.get("source_url") as string | null) ?? undefined,
     title: getRequiredString(formData, "title")
-  });
+  };
+
+  if (isKvContentBackend()) {
+    await updateKvPostSubmission(
+      id,
+      status,
+      { ...input, adminNotes: formData.get("admin_notes") },
+      profile.user_id
+    );
+    revalidatePath("/signal-control");
+    return;
+  }
+
+  if (!supabase) {
+    throw new Error("Supabase admin client missing.");
+  }
+
+  const validated = validatePostSubmission(input);
 
   if (!validated.ok) {
     throw new Error(Object.values(validated.errors).join(" "));
@@ -137,14 +190,37 @@ export async function publishPostSubmission(formData: FormData) {
     getRequiredString(formData, "body"),
     formData.get("excerpt") as string | null
   );
-  const validated = validatePostSubmission({
+  const input = {
     body: getRequiredString(formData, "body"),
     category: getRequiredString(formData, "category"),
     email: getRequiredString(formData, "email"),
     name: getRequiredString(formData, "name"),
     sourceUrl: (formData.get("source_url") as string | null) ?? undefined,
     title: getRequiredString(formData, "title")
-  });
+  };
+
+  if (isKvContentBackend()) {
+    await publishKvPostSubmission(
+      id,
+      intent,
+      {
+        ...input,
+        adminNotes: formData.get("admin_notes"),
+        author,
+        excerpt: formData.get("excerpt") as string | null
+      },
+      profile.user_id
+    );
+    revalidatePath("/signal-control");
+    revalidatePath("/dirty-news");
+    return;
+  }
+
+  if (!supabase) {
+    throw new Error("Supabase admin client missing.");
+  }
+
+  const validated = validatePostSubmission(input);
 
   if (!validated.ok) {
     throw new Error(Object.values(validated.errors).join(" "));
@@ -195,6 +271,17 @@ export async function publishPostSubmission(formData: FormData) {
 export async function deletePostSubmission(formData: FormData) {
   const { supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
+
+  if (isKvContentBackend()) {
+    await deleteKvPostSubmission(id);
+    revalidatePath("/signal-control");
+    return;
+  }
+
+  if (!supabase) {
+    throw new Error("Supabase admin client missing.");
+  }
+
   const { error } = await supabase.from("post_submissions").delete().eq("id", id);
 
   if (error) {
@@ -206,6 +293,11 @@ export async function deletePostSubmission(formData: FormData) {
 
 async function getCommentPostSlug(commentId: string) {
   const { supabase } = await getAdminContext();
+
+  if (!supabase) {
+    throw new Error("Supabase admin client missing.");
+  }
+
   const { data, error } = await supabase
     .from("comments")
     .select("post_id")
@@ -232,6 +324,14 @@ async function getCommentPostSlug(commentId: string) {
 export async function hideComment(formData: FormData) {
   const { profile } = await getAdminContext();
   const id = getRequiredString(formData, "id");
+
+  if (isKvContentBackend()) {
+    await setKvCommentHidden(id, true, profile.user_id);
+    revalidatePath("/signal-control");
+    revalidatePath("/dirty-news");
+    return;
+  }
+
   const { slug, supabase } = await getCommentPostSlug(id);
   const { error } = await supabase
     .from("comments")
@@ -252,6 +352,14 @@ export async function hideComment(formData: FormData) {
 
 export async function restoreComment(formData: FormData) {
   const id = getRequiredString(formData, "id");
+
+  if (isKvContentBackend()) {
+    await setKvCommentHidden(id, false);
+    revalidatePath("/signal-control");
+    revalidatePath("/dirty-news");
+    return;
+  }
+
   const { slug, supabase } = await getCommentPostSlug(id);
   const { error } = await supabase
     .from("comments")
@@ -272,6 +380,14 @@ export async function restoreComment(formData: FormData) {
 
 export async function deleteComment(formData: FormData) {
   const id = getRequiredString(formData, "id");
+
+  if (isKvContentBackend()) {
+    await deleteKvComment(id);
+    revalidatePath("/signal-control");
+    revalidatePath("/dirty-news");
+    return;
+  }
+
   const { slug, supabase } = await getCommentPostSlug(id);
   const { error } = await supabase.from("comments").delete().eq("id", id);
 
@@ -281,4 +397,41 @@ export async function deleteComment(formData: FormData) {
 
   revalidatePath("/signal-control");
   revalidatePath(`/dirty-news/${slug}`);
+}
+
+export async function updateHomeSettings(formData: FormData) {
+  await getAdminContext();
+  await updateKvHomeSettings(formData);
+  revalidatePath("/");
+  revalidatePath("/signal-control");
+}
+
+export async function savePost(formData: FormData) {
+  await getAdminContext();
+  await upsertKvPost(formData);
+  revalidatePath("/dirty-news");
+  revalidatePath("/signal-control");
+}
+
+export async function deletePost(formData: FormData) {
+  await getAdminContext();
+  await deleteKvPost(getRequiredString(formData, "id"));
+  revalidatePath("/dirty-news");
+  revalidatePath("/signal-control");
+}
+
+export async function saveVideo(formData: FormData) {
+  await getAdminContext();
+  await upsertKvVideo(formData);
+  revalidatePath("/");
+  revalidatePath("/dirty-tv");
+  revalidatePath("/signal-control");
+}
+
+export async function deleteVideo(formData: FormData) {
+  await getAdminContext();
+  await deleteKvVideo(getRequiredString(formData, "id"));
+  revalidatePath("/");
+  revalidatePath("/dirty-tv");
+  revalidatePath("/signal-control");
 }

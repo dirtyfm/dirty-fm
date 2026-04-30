@@ -1,22 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-function createBrowserSupabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !anonKey) {
-    throw new Error("Supabase public environment is not configured.");
-  }
-
-  return createClient(url, anonKey, {
-    auth: {
-      persistSession: false
-    }
-  });
-}
 
 export function SignalControlLogin() {
   const [email, setEmail] = useState("");
@@ -30,21 +14,10 @@ export function SignalControlLogin() {
     setIsSubmitting(true);
 
     try {
-      const supabase = createBrowserSupabaseClient();
-      const { data, error: loginError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (loginError || !data.session) {
-        throw new Error("Signal Control rejected that login.");
-      }
-
       const response = await fetch("/auth/session", {
         body: JSON.stringify({
-          accessToken: data.session.access_token,
-          expiresIn: data.session.expires_in,
-          refreshToken: data.session.refresh_token
+          email,
+          passphrase: password
         }),
         headers: {
           "Content-Type": "application/json"

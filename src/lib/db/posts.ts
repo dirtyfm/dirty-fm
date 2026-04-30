@@ -2,6 +2,8 @@ import "server-only";
 import { getPublishedPosts, type DirtyNewsPost } from "@/data/posts";
 import { mapVisiblePublicComments, type PublicDirtyNewsComment } from "@/lib/db/commentMapping";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
+import { isKvContentBackend } from "@/lib/contentBackend";
+import { getKvPublicPosts, getKvVisibleCommentsForPost } from "@/lib/kv/contentStore";
 
 type DbPost = {
   author: string;
@@ -54,6 +56,16 @@ function mapDbPost(post: DbPost): DirtyNewsPost {
 export async function getPublicDirtyNewsPosts() {
   const fallbackPosts = getPublishedPosts();
 
+  if (isKvContentBackend()) {
+    const kvPosts = await getKvPublicPosts();
+    const kvSlugs = new Set(kvPosts.map((post) => post.slug));
+    const staticPostsNotInKv = fallbackPosts.filter((post) => !kvSlugs.has(post.slug));
+
+    return [...kvPosts, ...staticPostsNotInKv].sort(
+      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    );
+  }
+
   if (!canUseSupabasePublicReads()) {
     return fallbackPosts;
   }
@@ -82,6 +94,10 @@ export async function getPublicDirtyNewsPosts() {
 export async function getVisibleCommentsForPost(
   postId: string
 ): Promise<PublicDirtyNewsComment[]> {
+  if (isKvContentBackend()) {
+    return getKvVisibleCommentsForPost(postId);
+  }
+
   if (!canUseSupabasePublicReads() || !isUuid(postId)) {
     return [];
   }

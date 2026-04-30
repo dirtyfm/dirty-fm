@@ -12,6 +12,7 @@ import {
   getVisibleCommentsForPost,
   isUuid
 } from "@/lib/db/posts";
+import { isKvContentBackend } from "@/lib/contentBackend";
 
 type DirtyNewsPostPageProps = {
   params: Promise<{
@@ -64,7 +65,7 @@ export default async function DirtyNewsPostPage({
   }
 
   const comments = await getVisibleCommentsForPost(post.id);
-  const canAcceptComments = isUuid(post.id);
+  const canAcceptComments = isKvContentBackend() ? !post.archive : isUuid(post.id);
 
   return (
     <article className="grid gap-8 min-[760px]:gap-10">

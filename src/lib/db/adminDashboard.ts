@@ -1,8 +1,10 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isKvContentBackend } from "@/lib/contentBackend";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import type { Database } from "@/lib/db/types";
 import { getExactCount, mapCommentsToPostTitles } from "@/lib/db/adminDashboardUtils";
+import { getKvAdminDashboardData } from "@/lib/kv/contentStore";
 
 export type AdminDashboardContact = Pick<
   Database["public"]["Tables"]["contact_submissions"]["Row"],
@@ -34,7 +36,17 @@ export type AdminDashboardPostSubmission = Pick<
 
 export type AdminDashboardPost = Pick<
   Database["public"]["Tables"]["posts"]["Row"],
-  "id" | "title" | "slug" | "category" | "author" | "status" | "published_at" | "created_at"
+  | "author"
+  | "body"
+  | "category"
+  | "created_at"
+  | "excerpt"
+  | "featured_image_url"
+  | "id"
+  | "published_at"
+  | "slug"
+  | "status"
+  | "title"
 >;
 
 export type AdminDashboardComment = Pick<
@@ -92,6 +104,10 @@ async function requireData<T>(
 export async function getAdminDashboardData(
   accessToken: string
 ): Promise<AdminDashboardData> {
+  if (isKvContentBackend()) {
+    return getKvAdminDashboardData();
+  }
+
   const supabase = createSupabaseServerClient(accessToken);
 
   const [
@@ -122,7 +138,7 @@ export async function getAdminDashboardData(
       .limit(8),
     supabase
       .from("posts")
-      .select("id, title, slug, category, author, status, published_at, created_at")
+      .select("id, title, slug, excerpt, body, category, author, featured_image_url, status, published_at, created_at")
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(8),
     supabase

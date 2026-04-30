@@ -1,8 +1,10 @@
 "use server";
 
 import { headers } from "next/headers";
+import { isKvContentBackend } from "@/lib/contentBackend";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import { createContactSubmission } from "@/lib/db/submissions";
+import { createKvContactSubmission } from "@/lib/kv/contentStore";
 import {
   normalizeContactFormForSubmission,
   type ContactSubmissionInput
@@ -44,6 +46,16 @@ export async function submitContactSignal(
   }
 
   const input: ContactSubmissionInput = normalizeContactFormForSubmission(values);
+  if (isKvContentBackend()) {
+    const result = await createKvContactSubmission(input);
+
+    if (!result.ok) {
+      return { errors: result.errors, ok: false };
+    }
+
+    return { ok: true };
+  }
+
   const supabase = createSupabaseServerClient();
   const result = await createContactSubmission(supabase, input);
 
