@@ -37,7 +37,7 @@ export const dirtyVideos: DirtyVideo[] = [
       "A cheap little broadcast file about fake polish, managed speech, and the strange dignity of looking terrible on purpose.",
     category: "Public Access Hell",
     status: "unapproved",
-    host: "Erik Woods",
+    host: "Drift",
     publishedAt: "2026-04-27T20:30:00.000Z",
     isFeatured: false
   },

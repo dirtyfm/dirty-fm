@@ -1,4 +1,4 @@
-Below is a usable brand identity direction for **DirtyFM / Erik Woods Radio / Drift** as a raw internet-radio/video/blog brand.
+Below is a usable brand identity direction for **DirtyFM / Drift** as a raw internet-radio/video/blog brand.
 
 ## Core brand idea
 
@@ -176,7 +176,7 @@ It should feel like:
 
 **Raw internet radio for free speech, chaos, and uncensored comedy.**
 
-**DirtyFM archives the rants, calls, videos, and random bullshit of Erik Woods and Drift.**
+**DirtyFM archives the rants, calls, videos, and random bullshit of Drift.**
 
 ---
 
@@ -461,7 +461,7 @@ Headline options:
 
 Subheadline:
 
-> Erik Woods and Drift bring prank calls, rants, videos, dirty news, anti-government comedy, and open-mic chaos from the wrong side of the broadcast.
+> Drift brings prank calls, rants, videos, dirty news, anti-government comedy, and open-mic chaos from the wrong side of the broadcast.
 
 CTA buttons:
 
@@ -606,7 +606,7 @@ Show Notes
 
 **DirtyFM Is the Signal They Forgot to Kill.**
 
-Raw radio, prank-call chaos, dark comedy, anti-government noise, and random fucking bullshit from Erik Woods, Drift, and whoever gets close enough to the mic.
+Raw radio, prank-call chaos, dark comedy, anti-government noise, and random fucking bullshit from Drift and whoever gets close enough to the mic.
 
 No polish.
 No permission.
@@ -819,7 +819,7 @@ SEO-safe versions:
 
 ```text
 DirtyFM | Unfiltered Radio, Comedy, Videos & Dirty News
-DirtyFM Videos | Erik Woods Radio Show Archive
+DirtyFM Videos | Drift Radio Show Archive
 Dirty News | Raw Commentary & Comedy
 The Drift Files | Host Archive & Show Notes
 ```
@@ -839,7 +839,7 @@ Use this as the internal north star:
 Use this to generate the website design direction:
 
 ```text
-Design a brand identity and website for DirtyFM, an unfiltered internet radio and video archive centered on Erik Woods and the character/host Drift.
+Design a brand identity and website for DirtyFM, an unfiltered internet radio and video archive centered on Drift.
 
 DirtyFM is raw, chaotic, anti-control, anti-government-overreach, darkly comedic, and built around “random fucking bullshit” where people can speak their mind. The brand should feel like pirate radio, corrupted public access TV, punk zines, prank-call archives, late-night basement broadcasting, dirty VHS static, and vandalized government files.
 

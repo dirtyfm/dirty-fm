@@ -42,7 +42,7 @@ export const dirtyNewsPosts: DirtyNewsPost[] = [
       "DirtyFM prefers the bad lighting. At least you can see the fingerprints."
     ],
     category: "Public Access Hell",
-    author: "Erik Woods",
+    author: "Drift",
     publishedAt: "2026-04-28T14:30:00.000Z",
     status: "published"
   },

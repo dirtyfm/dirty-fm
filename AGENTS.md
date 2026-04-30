@@ -2,7 +2,7 @@
 
 ## 1. Project overview
 
-DirtyFM is a Next.js site for Erik Woods / Drift, built as a raw internet-radio, video, and Dirty News archive. Before any task involving UI, layout, copy, components, or routes, read `docs/brand.md`; it is the brand source of truth.
+DirtyFM is a Next.js site for Drift, built as a raw internet-radio, video, and Dirty News archive. Before any task involving UI, layout, copy, components, or routes, read `docs/brand.md`; it is the brand source of truth.
 
 This repo uses Next.js App Router with TypeScript and Tailwind CSS. Re-check `package.json`, lockfiles, and route structure before starting work because the app may evolve.
 

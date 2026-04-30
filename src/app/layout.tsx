@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s | DirtyFM"
   },
   description:
-    "DirtyFM archives raw internet radio, dark comedy, videos, prank culture, and Dirty News from Erik Woods and Drift."
+    "DirtyFM archives raw internet radio, dark comedy, videos, prank culture, and Dirty News from Drift."
 };
 
 export default function RootLayout({

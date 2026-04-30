@@ -102,8 +102,8 @@ export default function Home() {
             </h1>
             <p className="max-w-3xl text-[clamp(1.1rem,2.5vw,1.5rem)] leading-snug text-dirty-ash">
               Raw radio, prank-call chaos, dark comedy, anti-control noise,
-              and random fucking bullshit from Erik Woods, Drift, and whoever
-              gets close enough to the mic.
+              and random fucking bullshit from Drift and whoever gets close
+              enough to the mic.
             </p>
             <div className="flex flex-col gap-3 min-[500px]:flex-row min-[500px]:flex-wrap">
               <DirtyButton href="/dirty-tv">Watch Latest Video</DirtyButton>
@@ -125,7 +125,7 @@ export default function Home() {
             <dl className="grid gap-2 font-utility text-xs font-black uppercase">
               <div className="flex justify-between gap-3 border-t border-[rgba(183,178,168,0.24)] pt-2">
                 <dt className="text-dirty-yellow">Host</dt>
-                <dd className="text-right text-dirty-ash">Drift / Erik Woods</dd>
+                <dd className="text-right text-dirty-ash">Drift</dd>
               </div>
               <div className="flex justify-between gap-3 border-t border-[rgba(183,178,168,0.24)] pt-2">
                 <dt className="text-dirty-yellow">Format</dt>
