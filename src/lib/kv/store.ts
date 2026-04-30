@@ -7,6 +7,12 @@ export type DirtyKvNamespace = {
   put(key: string, value: string): Promise<void>;
 };
 
+type CloudflareKvRestEnv = {
+  accountId: string;
+  apiToken: string;
+  namespaceId: string;
+};
+
 const memoryKv = new Map<string, string>();
 
 const memoryNamespace: DirtyKvNamespace = {
@@ -33,6 +39,83 @@ type CloudflareContext = {
   };
 };
 
+function getCloudflareKvRestEnv(): CloudflareKvRestEnv | null {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+
+  if (!accountId || !namespaceId || !apiToken) {
+    return null;
+  }
+
+  return { accountId, apiToken, namespaceId };
+}
+
+function createCloudflareKvRestNamespace(
+  env: CloudflareKvRestEnv,
+  fetcher: typeof fetch = fetch
+): DirtyKvNamespace {
+  const baseUrl = `https://api.cloudflare.com/client/v4/accounts/${env.accountId}/storage/kv/namespaces/${env.namespaceId}/values`;
+
+  function keyUrl(key: string) {
+    return `${baseUrl}/${encodeURIComponent(key)}`;
+  }
+
+  async function request(key: string, init?: RequestInit) {
+    return fetcher(keyUrl(key), {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${env.apiToken}`,
+        ...init?.headers
+      }
+    });
+  }
+
+  async function assertOk(response: Response, action: string, key: string) {
+    if (response.ok) {
+      return;
+    }
+
+    const detail = await response.text().catch(() => "");
+    throw new Error(
+      `Cloudflare KV ${action} failed for ${key}: ${response.status} ${response.statusText}${detail ? ` - ${detail}` : ""}`
+    );
+  }
+
+  return {
+    async delete(key) {
+      const response = await request(key, { method: "DELETE" });
+      await assertOk(response, "delete", key);
+    },
+    async get<T = JsonValue>(key: string, type?: "json") {
+      const response = await request(key);
+
+      if (response.status === 404) {
+        return null;
+      }
+
+      await assertOk(response, "read", key);
+      const value = await response.text();
+
+      if (type === "json") {
+        return (value ? JSON.parse(value) : null) as T | null;
+      }
+
+      return value as T | null;
+    },
+    async put(key, value) {
+      const response = await request(key, {
+        body: value,
+        headers: {
+          "Content-Type": "text/plain;charset=UTF-8"
+        },
+        method: "PUT"
+      });
+      await assertOk(response, "write", key);
+    }
+  };
+}
+
 async function getCloudflareContext(): Promise<CloudflareContext | null> {
   try {
     const dynamicImport = new Function("specifier", "return import(specifier)") as (
@@ -47,8 +130,24 @@ async function getCloudflareContext(): Promise<CloudflareContext | null> {
 
 export async function getDirtyfmKvNamespace() {
   const context = await getCloudflareContext();
-  return context?.env?.DIRTYFM_CONTENT ?? memoryNamespace;
+  const binding = context?.env?.DIRTYFM_CONTENT;
+
+  if (binding) {
+    return binding;
+  }
+
+  const restEnv = getCloudflareKvRestEnv();
+
+  if (restEnv) {
+    return createCloudflareKvRestNamespace(restEnv);
+  }
+
+  return memoryNamespace;
 }
+
+export const __test = {
+  createCloudflareKvRestNamespace
+};
 
 export async function readJsonKey<T>(key: string, fallback: T): Promise<T> {
   const namespace = await getDirtyfmKvNamespace();
