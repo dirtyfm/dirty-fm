@@ -9,6 +9,12 @@ import {
 import { dirtyfmArchivedPosts } from "./dirtyfmArchivedPosts.ts";
 
 describe("Dirty News post helpers", () => {
+  const removedSeededSlugs = [
+    "machine-found-another-clipboard",
+    "public-access-hell-has-better-standards",
+    "open-mic-degeneracy-report-static-edition"
+  ];
+
   it("only exposes published posts", () => {
     const posts = getPublishedPosts();
 
@@ -20,12 +26,14 @@ describe("Dirty News post helpers", () => {
     assert.equal(getPostBySlug("draft-file-the-public-does-not-get"), null);
   });
 
-  it("resolves known slugs and rejects unknown slugs", () => {
-    assert.equal(
-      getPostBySlug("machine-found-another-clipboard")?.id,
-      "dn-001"
-    );
+  it("rejects unknown slugs", () => {
     assert.equal(getPostBySlug("unknown-static-burst"), null);
+  });
+
+  it("does not expose removed seeded Dirty News posts", () => {
+    for (const slug of removedSeededSlugs) {
+      assert.equal(getPostBySlug(slug), null);
+    }
   });
 
   it("resolves every published archived slug", () => {
@@ -59,7 +67,7 @@ describe("Dirty News post helpers", () => {
   });
 
   it("filters published posts by category", () => {
-    const category = "Open Mic";
+    const category = "Dirty News";
     const posts = getPublishedPostsByCategory(category);
 
     assert.deepEqual(getDirtyNewsCategories().includes(category), true);

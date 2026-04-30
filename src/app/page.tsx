@@ -10,6 +10,8 @@ import {
   TickerBar,
   VideoTrashCard
 } from "@/components/dirty";
+import { formatPostDate } from "@/data/posts";
+import { getPublicDirtyNewsPosts } from "@/lib/db/posts";
 
 const dirtyFeed = [
   "LIVE WIRE: Drift is still not applying for approval",
@@ -30,33 +32,6 @@ const driftFiles = [
   {
     label: "Control Problem",
     value: "Government overreach, speech managers, and fake politeness."
-  }
-];
-
-const newsPosts = [
-  {
-    title: "Today's Bullshit, Dragged Into the Light",
-    excerpt:
-      "Notes from the dirty signal: bad rules, worse explanations, and Drift asking why everyone sounds like a nervous memo.",
-    href: "/dirty-news/machine-found-another-clipboard",
-    category: "Government Bullshit",
-    dateLabel: "Latest Drop"
-  },
-  {
-    title: "The Culture Police Need a Worse Job",
-    excerpt:
-      "A dirty little dispatch about fake politeness, managed speech, and why every sentence does not need a safety helmet.",
-    href: "/dirty-news/public-access-hell-has-better-standards",
-    category: "Fuck the Machine",
-    dateLabel: "Signal Log"
-  },
-  {
-    title: "Open Mic Degeneracy Report",
-    excerpt:
-      "Listener noise, bad ideas, cracked jokes, complaints, and whatever else crawled out of the broadcast slot.",
-    href: "/dirty-news/open-mic-degeneracy-report-static-edition",
-    category: "Open Mic",
-    dateLabel: "Archive Note"
   }
 ];
 
@@ -84,7 +59,19 @@ const videos = [
   }
 ];
 
-export default function Home() {
+function getPostDateLabel(post: Awaited<ReturnType<typeof getPublicDirtyNewsPosts>>[number]) {
+  return post.archive?.publishedAtOriginal ?? formatPostDate(post.publishedAt);
+}
+
+export default async function Home() {
+  const newsPosts = (await getPublicDirtyNewsPosts()).slice(0, 3).map((post) => ({
+    title: post.title,
+    excerpt: post.excerpt,
+    href: `/dirty-news/${post.slug}`,
+    category: post.category,
+    dateLabel: getPostDateLabel(post)
+  }));
+
   return (
     <div className="grid gap-10 min-[760px]:gap-14">
       <TickerBar items={dirtyFeed} label="Dirty Feed" />
@@ -193,15 +180,24 @@ export default function Home() {
             Enter Dirty News
           </DirtyButton>
         </div>
-        <div className="grid gap-4 min-[860px]:grid-cols-3">
-          {newsPosts.map((post, index) => (
-            <DirtyNewsCard
-              key={post.title}
-              {...post}
-              tone={index === 0 ? "red" : index === 1 ? "yellow" : "green"}
-            />
-          ))}
-        </div>
+        {newsPosts.length > 0 ? (
+          <div className="grid gap-4 min-[860px]:grid-cols-3">
+            {newsPosts.map((post, index) => (
+              <DirtyNewsCard
+                key={post.href}
+                {...post}
+                tone={index === 0 ? "red" : index === 1 ? "yellow" : "green"}
+              />
+            ))}
+          </div>
+        ) : (
+          <StaticPanel label="Empty Archive Drawer" title="No Published Static Yet." tone="yellow">
+            <p className="max-w-2xl text-lg leading-snug">
+              Dirty News is quiet right now. The archive drawer is empty,
+              dusty, and still accepting signals.
+            </p>
+          </StaticPanel>
+        )}
       </section>
 
       <section className="grid gap-5">
