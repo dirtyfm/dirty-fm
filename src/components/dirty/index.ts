@@ -1,4 +1,8 @@
 export { ArchiveCard, type ArchiveCardProps, type ArchiveMeta } from "./ArchiveCard";
+export {
+  ArchivedDirtyTVArchive,
+  type ArchivedDirtyTVArchiveProps
+} from "./ArchivedDirtyTVArchive";
 export { DirtyButton, type DirtyButtonProps } from "./DirtyButton";
 export { DirtyNewsCard, type DirtyNewsCardProps } from "./DirtyNewsCard";
 export { DirtyTVPlayer, type DirtyTVPlayerProps } from "./DirtyTVPlayer";

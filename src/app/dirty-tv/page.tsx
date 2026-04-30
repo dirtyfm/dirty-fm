@@ -1,16 +1,6 @@
 import type { Metadata } from "next";
-import { DirtyButton, DirtyTVPlayer, SectionStamp, SendSignalCTA } from "@/components/dirty";
-import {
-  getFeaturedVideo,
-  getVideoCategories,
-  getVideosByCategory
-} from "@/data/videos";
-
-type DirtyTVPageProps = {
-  searchParams?: Promise<{
-    category?: string;
-  }>;
-};
+import { ArchivedDirtyTVArchive, SendSignalCTA } from "@/components/dirty";
+import { getArchivedDirtyTvPosts } from "@/data/dirtyTvArchivedPosts";
 
 export const metadata: Metadata = {
   title: "Dirty TV",
@@ -18,15 +8,9 @@ export const metadata: Metadata = {
     "Dirty TV from DirtyFM: YouTube video trash, public-access chaos, raw clips, and unapproved transmissions from Drift."
 };
 
-export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
-  const params = await searchParams;
-  const activeCategory = params?.category;
-  const categories = getVideoCategories();
-  const selectedCategory = categories.includes(activeCategory ?? "")
-    ? activeCategory
-    : undefined;
-  const featuredVideo = getFeaturedVideo();
-  const videos = getVideosByCategory(selectedCategory);
+export default function DirtyTVPage() {
+  const posts = getArchivedDirtyTvPosts();
+  const videoCount = posts.reduce((count, post) => count + post.videos.length, 0);
 
   return (
     <div className="grid gap-9 min-[760px]:gap-12">
@@ -41,44 +25,15 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
             Watch the Damage.
           </h1>
           <p className="max-w-3xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
-            YouTube files from the dirty signal: rants, prank wreckage, public
-            access hell, government noise, and whatever Drift dragged in before
-            the tape got warm.
+            Old DirtyTV files from the dirty signal: {posts.length} posts,
+            {" "}
+            {videoCount} embedded clips, no rewritten dates, no cleaned-up titles,
+            no fake comment bodies.
           </p>
         </div>
       </section>
 
-      <section className="grid gap-4">
-        <div className="flex flex-col gap-3 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
-          <SectionStamp label="Filter the Static" kicker="Categories" tone="yellow" />
-          <p className="max-w-xl font-utility text-xs font-bold uppercase text-dirty-gray">
-            Pick a channel. The archive gets narrower, not respectable.
-          </p>
-        </div>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 min-[760px]:mx-0 min-[760px]:flex-wrap min-[760px]:overflow-visible min-[760px]:px-0 min-[760px]:pb-0">
-          <DirtyButton
-            href="/dirty-tv"
-            variant={!selectedCategory ? "primary" : "ghost"}
-          >
-            All Video Trash
-          </DirtyButton>
-          {categories.map((category) => (
-            <DirtyButton
-              href={`/dirty-tv?category=${encodeURIComponent(category)}`}
-              key={category}
-              variant={selectedCategory === category ? "primary" : "ghost"}
-            >
-              {category}
-            </DirtyButton>
-          ))}
-        </div>
-      </section>
-
-      <DirtyTVPlayer
-        featuredVideo={featuredVideo}
-        selectedCategory={selectedCategory}
-        videos={videos}
-      />
+      <ArchivedDirtyTVArchive posts={posts} />
 
       <SendSignalCTA
         actionLabel="Send a Signal"

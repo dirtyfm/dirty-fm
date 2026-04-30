@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { archivedDirtyTvPosts } from "./dirtyTvArchivedPosts.ts";
+import {
+  archivedDirtyTvPosts,
+  getArchivedDirtyTvPosts,
+  getArchivedVideoEmbedUrl
+} from "./dirtyTvArchivedPosts.ts";
 
 describe("archived Dirty TV posts", () => {
   it("preserves the extracted post and embed counts", () => {
@@ -28,6 +32,20 @@ describe("archived Dirty TV posts", () => {
     ]);
   });
 
+  it("exposes all exact archived titles for the Dirty TV route", () => {
+    assert.deepEqual(
+      getArchivedDirtyTvPosts().map((post) => post.title),
+      [
+        "Victims of the war on drugs Part 1",
+        "Morning Show Drug Legalization",
+        "The Most Interesting Man In The World Running For President",
+        "The Motivation",
+        "Missed the libertarian debate?",
+        "New Morning show"
+      ]
+    );
+  });
+
   it("preserves original date strings exactly", () => {
     assert.deepEqual(
       archivedDirtyTvPosts.map((post) => post.postedAtOriginal),
@@ -43,5 +61,26 @@ describe("archived Dirty TV posts", () => {
     assert.equal(vimeoPost?.videos[0]?.provider, "vimeo");
     assert.equal(vimeoPost?.videos[0]?.videoId, "171365175");
     assert.equal(vimeoPost?.videos[0]?.url, "https://vimeo.com/171365175");
+    assert.equal(
+      vimeoPost?.videos[0] && getArchivedVideoEmbedUrl(vimeoPost.videos[0]),
+      "https://player.vimeo.com/video/171365175"
+    );
+  });
+
+  it("builds safe live embed URLs from archived video IDs", () => {
+    const embedUrls = archivedDirtyTvPosts.flatMap((post) =>
+      post.videos.map((video) => getArchivedVideoEmbedUrl(video))
+    );
+
+    assert.deepEqual(embedUrls, [
+      "https://www.youtube.com/embed/Gn9GQDXHBwo",
+      "https://player.vimeo.com/video/171365175",
+      "https://www.youtube.com/embed/bKgf5PaBzyg",
+      "https://www.youtube.com/embed/n9M69LpV2I4",
+      "https://www.youtube.com/embed/PXUFGaZ8T2U",
+      "https://www.youtube.com/embed/QQPWiCgAjDo",
+      "https://www.youtube.com/embed/yGQ4htj4V78",
+      "https://www.youtube.com/embed/LQ2eBjYI93o"
+    ]);
   });
 });

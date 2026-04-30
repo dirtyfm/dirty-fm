@@ -146,3 +146,19 @@ export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
     comments: []
   }
 ];
+
+export function getArchivedDirtyTvPosts() {
+  return archivedDirtyTvPosts.map((post) => ({
+    ...post,
+    videos: [...post.videos],
+    comments: [] as []
+  }));
+}
+
+export function getArchivedVideoEmbedUrl(video: ArchivedVideoEmbed) {
+  if (video.provider === "youtube") {
+    return `https://www.youtube.com/embed/${video.videoId}`;
+  }
+
+  return `https://player.vimeo.com/video/${video.videoId}`;
+}
