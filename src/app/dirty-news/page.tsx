@@ -93,7 +93,7 @@ export default async function DirtyNewsPage({
           label="Latest Dirty News"
           meta={[
             { label: "Category", value: featuredPost.category },
-            { label: "Author", value: featuredPost.author },
+            { label: "Author", value: featuredPost.author ?? "Unlisted" },
             { label: "Published", value: formatPostDate(featuredPost.publishedAt) }
           ]}
           notes={featuredPost.excerpt}

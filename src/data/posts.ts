@@ -1,4 +1,17 @@
+import { dirtyfmArchivedPosts } from "./dirtyfmArchivedPosts.ts";
+
 export type PostStatus = "draft" | "published";
+
+export type ArchivedPostComment = {
+  author?: string | null;
+  body?: string | null;
+  createdAt?: string | null;
+};
+
+export type ArchivedPostImage = {
+  alt: string;
+  src: string;
+};
 
 export type DirtyNewsPost = {
   id: string;
@@ -7,13 +20,67 @@ export type DirtyNewsPost = {
   excerpt: string;
   body: string[];
   category: string;
-  author: string;
+  author: string | null;
   featuredImageUrl?: string;
   publishedAt: string;
   status: PostStatus;
+  archive?: {
+    legacyId: string;
+    sourceFile: string;
+    sourceArchiveUrl: string;
+    legacyUrl: string;
+    publishedAtOriginal: string;
+    commentCountOriginal: number;
+    comments: readonly ArchivedPostComment[];
+    bodyText: string;
+    bodyHtmlPreserved: string;
+    images: readonly ArchivedPostImage[];
+    archiveNote: string;
+  };
 };
 
-export const dirtyNewsPosts: DirtyNewsPost[] = [
+function toParagraphs(bodyText: string) {
+  return bodyText.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);
+}
+
+function toExcerpt(bodyText: string) {
+  const text = bodyText.replace(/\s+/g, " ").trim();
+
+  if (text.length <= 180) {
+    return text;
+  }
+
+  return `${text.slice(0, 177).trimEnd()}...`;
+}
+
+// Archive text intentionally preserves original spelling, grammar, dates,
+// bylines, legacy URLs, source files, HTML, and original comment counts.
+const archivedDirtyNewsPosts: DirtyNewsPost[] = dirtyfmArchivedPosts.map((post) => ({
+  archive: {
+    archiveNote: post.archiveNote,
+    bodyHtmlPreserved: post.bodyHtmlPreserved,
+    bodyText: post.bodyText,
+    commentCountOriginal: post.commentCountOriginal,
+    comments: post.comments,
+    images: post.images,
+    legacyId: post.legacyId,
+    legacyUrl: post.legacyUrl,
+    publishedAtOriginal: post.publishedAtOriginal,
+    sourceArchiveUrl: post.sourceArchiveUrl,
+    sourceFile: post.sourceFile
+  },
+  author: post.author,
+  body: toParagraphs(post.bodyText),
+  category: "Dirty News",
+  excerpt: toExcerpt(post.bodyText),
+  id: post.legacyId,
+  publishedAt: `${post.publishedAt}T00:00:00.000Z`,
+  slug: post.slug,
+  status: post.status,
+  title: post.title
+}));
+
+const seededDirtyNewsPosts: DirtyNewsPost[] = [
   {
     id: "dn-001",
     title: "The Machine Found Another Clipboard",
@@ -73,6 +140,11 @@ export const dirtyNewsPosts: DirtyNewsPost[] = [
     publishedAt: "2026-05-01T12:00:00.000Z",
     status: "draft"
   }
+];
+
+export const dirtyNewsPosts: DirtyNewsPost[] = [
+  ...seededDirtyNewsPosts,
+  ...archivedDirtyNewsPosts
 ];
 
 function byNewestPublished(a: DirtyNewsPost, b: DirtyNewsPost) {

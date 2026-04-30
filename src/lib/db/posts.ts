@@ -1,5 +1,5 @@
 import "server-only";
-import { dirtyNewsPosts, type DirtyNewsPost } from "@/data/posts";
+import { getPublishedPosts, type DirtyNewsPost } from "@/data/posts";
 import { mapVisiblePublicComments, type PublicDirtyNewsComment } from "@/lib/db/commentMapping";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 
@@ -52,7 +52,7 @@ function mapDbPost(post: DbPost): DirtyNewsPost {
 }
 
 export async function getPublicDirtyNewsPosts() {
-  const fallbackPosts = dirtyNewsPosts.filter((post) => post.status === "published");
+  const fallbackPosts = getPublishedPosts();
 
   if (!canUseSupabasePublicReads()) {
     return fallbackPosts;
@@ -70,7 +70,13 @@ export async function getPublicDirtyNewsPosts() {
     return fallbackPosts;
   }
 
-  return (data as DbPost[]).map(mapDbPost);
+  const dbPosts = (data as DbPost[]).map(mapDbPost);
+  const dbSlugs = new Set(dbPosts.map((post) => post.slug));
+  const staticPostsNotInDb = fallbackPosts.filter((post) => !dbSlugs.has(post.slug));
+
+  return [...dbPosts, ...staticPostsNotInDb].sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
 }
 
 export async function getVisibleCommentsForPost(

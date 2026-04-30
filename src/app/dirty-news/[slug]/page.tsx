@@ -75,7 +75,7 @@ export default async function DirtyNewsPostPage({
           <dl className="grid gap-2 border-y border-[rgba(183,178,168,0.24)] py-4 font-utility text-xs font-black uppercase text-dirty-gray min-[640px]:grid-cols-3">
             <div>
               <dt className="text-dirty-yellow">Author</dt>
-              <dd className="text-dirty-ash">{post.author}</dd>
+              <dd className="text-dirty-ash">{post.author ?? "Unlisted"}</dd>
             </div>
             <div>
               <dt className="text-dirty-yellow">Published</dt>
@@ -116,6 +116,24 @@ export default async function DirtyNewsPostPage({
               can send signals, but they cannot publish posts directly.
             </p>
           </StaticPanel>
+          {post.archive ? (
+            <StaticPanel label="Legacy Archive" title="Original File Preserved." tone="yellow">
+              <dl className="grid gap-3 font-utility text-xs font-black uppercase">
+                <div>
+                  <dt className="text-dirty-yellow">Source File</dt>
+                  <dd className="break-words text-dirty-ash">{post.archive.sourceFile}</dd>
+                </div>
+                <div>
+                  <dt className="text-dirty-yellow">Original Comments</dt>
+                  <dd className="text-dirty-ash">{post.archive.commentCountOriginal}</dd>
+                </div>
+                <div>
+                  <dt className="text-dirty-yellow">Legacy URL</dt>
+                  <dd className="break-words text-dirty-ash">{post.archive.legacyUrl}</dd>
+                </div>
+              </dl>
+            </StaticPanel>
+          ) : null}
           <DirtyButton href="/dirty-news" variant="secondary" fullWidth>
             Back to Dirty News
           </DirtyButton>
