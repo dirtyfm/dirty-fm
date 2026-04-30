@@ -63,7 +63,7 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
         <div className="flex flex-col gap-3 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
           <SectionStamp label="Tune the Garbage" kicker="Categories" tone="yellow" />
           <p className="max-w-xl font-utility text-xs font-bold uppercase text-dirty-gray">
-            Pick a clip bucket. The feed gets narrower, not respectable.
+            Filter by category. Still irreverent, just more specific.
           </p>
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 min-[760px]:mx-0 min-[760px]:flex-wrap min-[760px]:overflow-visible min-[760px]:px-0 min-[760px]:pb-0">

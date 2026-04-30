@@ -167,9 +167,8 @@ export default async function DirtyNewsPage({
         }
       >
         <p className="max-w-3xl text-lg leading-snug">
-          Dirty News submissions are a front-door signal, not a public
-          publishing button. Send the lead, keep it readable, and leave raw HTML
-          in the dumpster where it belongs.
+          Submissions go to a review queue, not straight to the site. Write the
+          thing, send it in, leave the HTML where it belongs.
         </p>
       </StaticPanel>
 

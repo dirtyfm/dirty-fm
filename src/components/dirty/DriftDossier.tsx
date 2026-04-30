@@ -12,7 +12,10 @@ export type DriftDossierProps = {
 };
 
 const defaultItems: DossierItem[] = [
-  { label: "Role", value: "Radio host. Not by training. By insistence." },
+  {
+    label: "Role",
+    value: "Has been doing this since before it was a website. Will keep doing it regardless."
+  },
   { label: "Known For", value: "Letting it run too long. Usually worth it." },
   { label: "Hazard", value: "Will ask you to explain yourself." }
 ];

@@ -359,8 +359,8 @@ export function SendSignalForm() {
 
         <div className="flex flex-col gap-3 border-t border-[rgba(183,178,168,0.24)] pt-5 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">
           <p className="max-w-2xl text-sm leading-snug text-dirty-gray">
-            Sending this form validates the intake locally. It does not publish
-            a post, create an account, or fire an email from client-side code.
+            Hit send and it goes to Signal Control as a pending submission. No
+            post gets created, no account needed.
           </p>
           <DirtyButton className="min-[640px]:min-w-48" disabled={isPending} type="submit">
             {isPending ? "Sending Static" : "Send a Signal"}

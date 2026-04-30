@@ -33,7 +33,7 @@ const dirtyFeed = [
 const driftFiles = [
   {
     label: "Role",
-    value: "Radio host. Not by training. By insistence."
+    value: "Has been doing this since before it was a website. Will keep doing it regardless."
   },
   {
     label: "Known For",
@@ -266,16 +266,16 @@ export default async function Home() {
         href="/contact"
         label="Open Mic Degeneracy"
         meta={[
-          { label: "Accepting", value: "Rants, clips, stories, complaints" },
-          { label: "Rejected", value: "Boring sanitized PR sludge" }
+          { label: "Accepting", value: "Rants, clips, tips, complaints, weird opinions" },
+          { label: "Not interested in", value: "Pre-approved PR copy" }
         ]}
-        notes="Got a signal worth throwing into the archive? Send it in. Do not publish yourself. Do not paste raw HTML. Just bring the noise."
-        title="The Door Is Kicked Open."
+        notes="Got a rant, a clip, a complaint, a tip? Send it in. Don't paste raw HTML and don't try to publish yourself - just write the thing and throw it at the intake."
+        title="The Mic Is Open."
         tone="green"
       />
 
       <SendSignalCTA
-        body="Got something for the broadcast? Send it in. Keep it readable. Don't make it boring."
+        body="Got something? Send it before you talk yourself out of it."
         href="/contact"
         title="Send a Signal Before the Static Eats It."
       />

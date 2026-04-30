@@ -22,7 +22,7 @@ export const dirtyVideos: DirtyVideo[] = [
     title: "Dirty Signal Test: Do Not Sanitize",
     youtubeId: "dQw4w9WgXcQ",
     description:
-      "Drift kicks the wire until the feed coughs up rants, static, and a warning label nobody asked for.",
+      "First test of the new Dirty TV player. Drift talks, something breaks, nobody cares.",
     category: "Video Trash",
     status: "featured",
     host: "Drift",

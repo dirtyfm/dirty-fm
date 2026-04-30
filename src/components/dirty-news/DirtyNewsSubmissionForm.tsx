@@ -250,8 +250,9 @@ export function DirtyNewsSubmissionForm() {
 
         <div className="flex flex-col gap-3 border-t border-[rgba(183,178,168,0.24)] pt-5 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">
           <p className="max-w-2xl text-sm leading-snug text-dirty-gray">
-            New submissions are written as pending post submissions. Public
-            users cannot set approval status or write into published posts.
+            What you send lands in a queue. Signal Control reads it, edits it
+            if needed, and decides whether it goes public. You don&apos;t have a
+            publish button.
           </p>
           <DirtyButton className="min-[640px]:min-w-48" disabled={isPending} type="submit">
             {isPending ? "Sending File" : "Submit Dirty News"}
