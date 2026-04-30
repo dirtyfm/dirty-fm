@@ -1,6 +1,7 @@
 export { ArchiveCard, type ArchiveCardProps, type ArchiveMeta } from "./ArchiveCard";
 export { DirtyButton, type DirtyButtonProps } from "./DirtyButton";
 export { DirtyNewsCard, type DirtyNewsCardProps } from "./DirtyNewsCard";
+export { DirtyTVPlayer, type DirtyTVPlayerProps } from "./DirtyTVPlayer";
 export { DriftDossier, type DriftDossierProps, type DossierItem } from "./DriftDossier";
 export { LatestTransmission, type LatestTransmissionProps } from "./LatestTransmission";
 export { SectionStamp, type SectionStampProps } from "./SectionStamp";
