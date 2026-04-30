@@ -27,6 +27,17 @@ const typeNotes: Record<string, string> = {
   "Other Bullshit": "Everything that escaped the labeled drawers."
 };
 
+const errorLabels: Record<keyof ContactFormValues | "database" | "message", string> = {
+  attachmentUrl: "Link / Attachment URL",
+  canReadOnAir: "Can we read this on air?",
+  database: "Signal Control",
+  email: "Email",
+  message: "Message",
+  name: "Name / Alias",
+  subject: "Subject",
+  submissionType: "Submission Type"
+};
+
 function FieldError({ message }: { message?: string }) {
   if (!message) {
     return null;
@@ -51,6 +62,17 @@ export function SendSignalForm() {
     [values.submissionType]
   );
   const publicFormError = errors.database ?? errors.message;
+  const visibleErrors = useMemo(
+    () =>
+      Object.entries(errors)
+        .filter((entry): entry is [keyof typeof errorLabels, string] => Boolean(entry[1]))
+        .map(([field, message]) => ({
+          field,
+          label: errorLabels[field] ?? field,
+          message
+        })),
+    [errors]
+  );
 
   function updateField(field: keyof ContactFormValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -135,9 +157,18 @@ export function SendSignalForm() {
               Static jammed the line.
             </p>
             <p className="mt-2 text-dirty-gray">
-              Fix the marked fields and send it again. The machine is picky
+              Fix the listed fields and send it again. The machine is picky
               before it gets useful.
             </p>
+            {visibleErrors.length > 0 ? (
+              <ul className="mt-3 grid gap-1 font-utility text-xs font-bold uppercase text-dirty-yellow">
+                {visibleErrors.map((error) => (
+                  <li key={error.field}>
+                    {error.label}: {error.message}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             {publicFormError ? (
               <p className="mt-2 font-utility text-xs font-bold uppercase text-dirty-yellow">
                 {publicFormError}
@@ -228,10 +259,23 @@ export function SendSignalForm() {
           </fieldset>
         </div>
 
-        <fieldset className="grid gap-3">
+        <fieldset
+          aria-invalid={Boolean(errors.submissionType)}
+          className={cx(
+            "grid gap-3 border border-transparent p-0 transition-colors",
+            errors.submissionType
+              ? "border-dirty-red bg-dirty-red/10 p-3 shadow-[0.25rem_0.25rem_0_rgba(209,42,31,0.28)]"
+              : ""
+          )}
+        >
           <legend className="font-utility text-xs font-black uppercase text-dirty-yellow">
             Submission Type
           </legend>
+          {errors.submissionType ? (
+            <p className="border-l-8 border-dirty-red bg-dirty-black/70 p-3 font-utility text-xs font-black uppercase text-dirty-yellow">
+              Pick one bucket below. This is the jammed wire.
+            </p>
+          ) : null}
           <div className="grid gap-3 min-[640px]:grid-cols-2 min-[980px]:grid-cols-4">
             {submissionTypes.map((type) => (
               <label
@@ -239,6 +283,8 @@ export function SendSignalForm() {
                   "grid min-h-32 cursor-pointer content-start gap-2 border p-3 shadow-[0.2rem_0.2rem_0_rgba(0,0,0,0.3)] transition-colors",
                   values.submissionType === type
                     ? "border-dirty-red bg-dirty-red/20 text-dirty-ash"
+                    : errors.submissionType
+                      ? "border-dirty-red/70 bg-dirty-purple/55 text-dirty-gray hover:border-dirty-yellow hover:bg-dirty-yellow/10"
                     : "border-[rgba(183,178,168,0.24)] bg-dirty-purple/45 text-dirty-gray hover:border-dirty-yellow hover:bg-dirty-yellow/10"
                 )}
                 key={type}

@@ -106,6 +106,15 @@ describe("Cloudflare KV REST adapter", () => {
     assert.equal(calls[0].init.headers.Authorization, "Bearer token-abc");
   });
 
+  it("treats delete of a missing key as successful", async () => {
+    const namespace = __test.createCloudflareKvRestNamespace(
+      env,
+      async () => new Response("missing", { status: 404, statusText: "Not Found" })
+    );
+
+    await assert.doesNotReject(() => namespace.delete("content:videos:dtv-001"));
+  });
+
   it("throws clear errors for failed writes", async () => {
     const namespace = __test.createCloudflareKvRestNamespace(
       env,

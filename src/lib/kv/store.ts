@@ -85,6 +85,10 @@ function createCloudflareKvRestNamespace(
   async function assertMutationOk(response: Response, action: string, key: string) {
     const detail = await response.text().catch(() => "");
 
+    if (action === "delete" && response.status === 404) {
+      return;
+    }
+
     if (!response.ok) {
       throw new Error(
         `Cloudflare KV ${action} failed for ${key}: ${response.status} ${response.statusText}${detail ? ` - ${detail}` : ""}`

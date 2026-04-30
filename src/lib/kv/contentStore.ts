@@ -469,7 +469,11 @@ export async function upsertKvVideo(formData: FormData) {
 }
 
 export async function deleteKvVideo(id: string) {
-  await deleteJsonKey(keyFor("videos", id));
+  try {
+    await deleteJsonKey(keyFor("videos", id));
+  } catch (error) {
+    console.error(`KV video record delete failed for ${id}; writing tombstone anyway.`, error);
+  }
   await removeFromIndex(keys.videosIndex, id);
   await addToIndex(keys.videosDeletedIndex, id);
 }
