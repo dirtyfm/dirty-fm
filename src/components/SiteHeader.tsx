@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const navItems = [
   { href: "/", label: "Signal" },
-  { href: "/tv", label: "Dirty TV" },
+  { href: "/dirty-tv", label: "Dirty TV" },
   { href: "/dirty-news", label: "Dirty News" },
   { href: "/drift-files", label: "The Drift Files" },
   { href: "/prank-archive", label: "Prank Archive" },
