@@ -82,10 +82,48 @@ function createCloudflareKvRestNamespace(
     );
   }
 
+  async function assertMutationOk(response: Response, action: string, key: string) {
+    const detail = await response.text().catch(() => "");
+
+    if (!response.ok) {
+      throw new Error(
+        `Cloudflare KV ${action} failed for ${key}: ${response.status} ${response.statusText}${detail ? ` - ${detail}` : ""}`
+      );
+    }
+
+    if (!detail.trim()) {
+      return;
+    }
+
+    try {
+      const payload = JSON.parse(detail) as {
+        errors?: Array<{ message?: string }>;
+        messages?: Array<{ message?: string }>;
+        success?: boolean;
+      };
+
+      if (payload.success === false) {
+        const messages = [...(payload.errors ?? []), ...(payload.messages ?? [])]
+          .map((item) => item.message)
+          .filter(Boolean)
+          .join("; ");
+        throw new Error(
+          `Cloudflare KV ${action} failed for ${key}: API success=false${messages ? ` - ${messages}` : ""}`
+        );
+      }
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        return;
+      }
+
+      throw error;
+    }
+  }
+
   return {
     async delete(key) {
       const response = await request(key, { method: "DELETE" });
-      await assertOk(response, "delete", key);
+      await assertMutationOk(response, "delete", key);
     },
     async get<T = JsonValue>(key: string, type?: "json") {
       const response = await request(key);
@@ -111,7 +149,7 @@ function createCloudflareKvRestNamespace(
         },
         method: "PUT"
       });
-      await assertOk(response, "write", key);
+      await assertMutationOk(response, "write", key);
     }
   };
 }
@@ -147,7 +185,10 @@ export async function getDirtyfmKvNamespace() {
 
 export const __test = {
   createCloudflareKvRestNamespace,
-  readJsonKeyFromNamespace
+  readJsonKeyFromNamespace,
+  resetMemoryKv() {
+    memoryKv.clear();
+  }
 };
 
 export async function readJsonKey<T>(key: string, fallback: T): Promise<T> {

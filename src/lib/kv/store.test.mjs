@@ -89,6 +89,23 @@ describe("Cloudflare KV REST adapter", () => {
     assert.equal(calls[0].init.headers["Content-Type"], "text/plain;charset=UTF-8");
   });
 
+  it("deletes values with auth through the encoded KV value URL", async () => {
+    const calls = [];
+    const namespace = __test.createCloudflareKvRestNamespace(env, async (url, init) => {
+      calls.push({ init, url });
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
+    });
+
+    await namespace.delete("content:videos:dtv-001");
+
+    assert.equal(calls[0].init.method, "DELETE");
+    assert.equal(
+      calls[0].url,
+      "https://api.cloudflare.com/client/v4/accounts/account-123/storage/kv/namespaces/namespace-456/values/content%3Avideos%3Adtv-001"
+    );
+    assert.equal(calls[0].init.headers.Authorization, "Bearer token-abc");
+  });
+
   it("throws clear errors for failed writes", async () => {
     const namespace = __test.createCloudflareKvRestNamespace(
       env,
@@ -98,6 +115,44 @@ describe("Cloudflare KV REST adapter", () => {
     await assert.rejects(
       () => namespace.put("content:posts:index", "[]"),
       /Cloudflare KV write failed for content:posts:index: 403 Forbidden - bad token/
+    );
+  });
+
+  it("throws clear errors when Cloudflare returns success false for writes", async () => {
+    const namespace = __test.createCloudflareKvRestNamespace(
+      env,
+      async () =>
+        new Response(
+          JSON.stringify({
+            errors: [{ message: "KV namespace is not writable" }],
+            success: false
+          }),
+          { status: 200 }
+        )
+    );
+
+    await assert.rejects(
+      () => namespace.put("content:contact-submissions:index", "[]"),
+      /Cloudflare KV write failed for content:contact-submissions:index: API success=false - KV namespace is not writable/
+    );
+  });
+
+  it("throws clear errors when Cloudflare returns success false for deletes", async () => {
+    const namespace = __test.createCloudflareKvRestNamespace(
+      env,
+      async () =>
+        new Response(
+          JSON.stringify({
+            errors: [{ message: "token cannot delete values" }],
+            success: false
+          }),
+          { status: 200 }
+        )
+    );
+
+    await assert.rejects(
+      () => namespace.delete("content:videos:dtv-001"),
+      /Cloudflare KV delete failed for content:videos:dtv-001: API success=false - token cannot delete values/
     );
   });
 

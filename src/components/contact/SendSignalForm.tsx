@@ -50,6 +50,7 @@ export function SendSignalForm() {
     () => (values.submissionType ? typeNotes[values.submissionType] : null),
     [values.submissionType]
   );
+  const publicFormError = errors.database ?? errors.message;
 
   function updateField(field: keyof ContactFormValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -137,9 +138,9 @@ export function SendSignalForm() {
               Fix the marked fields and send it again. The machine is picky
               before it gets useful.
             </p>
-            {errors.database ? (
+            {publicFormError ? (
               <p className="mt-2 font-utility text-xs font-bold uppercase text-dirty-yellow">
-                {errors.database}
+                {publicFormError}
               </p>
             ) : null}
           </div>

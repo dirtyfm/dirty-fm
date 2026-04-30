@@ -20,6 +20,10 @@ import {
   checkPublicRateLimit,
   getClientIp
 } from "@/lib/publicInputGuards";
+import {
+  createContactSubmissionFailureState,
+  logContactSubmissionFailure
+} from "@/lib/contactSubmissionActionState";
 
 export type ContactSubmissionActionState = {
   errors?: Record<string, string>;
@@ -48,7 +52,14 @@ export async function submitContactSignal(
 
   const input: ContactSubmissionInput = normalizeContactFormForSubmission(values);
   if (isKvContentBackend()) {
-    const result = await createKvContactSubmission(input);
+    let result: Awaited<ReturnType<typeof createKvContactSubmission>>;
+
+    try {
+      result = await createKvContactSubmission(input);
+    } catch (error) {
+      logContactSubmissionFailure("cloudflare-kv", error);
+      return createContactSubmissionFailureState();
+    }
 
     if (!result.ok) {
       return { errors: result.errors, ok: false };
@@ -60,7 +71,14 @@ export async function submitContactSignal(
   }
 
   const supabase = createSupabaseServerClient();
-  const result = await createContactSubmission(supabase, input);
+  let result: Awaited<ReturnType<typeof createContactSubmission>>;
+
+  try {
+    result = await createContactSubmission(supabase, input);
+  } catch (error) {
+    logContactSubmissionFailure("supabase", error);
+    return createContactSubmissionFailureState();
+  }
 
   if (!result.ok) {
     return { errors: result.errors, ok: false };

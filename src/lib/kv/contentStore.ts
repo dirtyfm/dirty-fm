@@ -28,6 +28,8 @@ import type {
 } from "@/lib/kv/types";
 import type { DirtyNewsPost } from "@/data/posts";
 import type { DirtyVideo, VideoStatus } from "@/data/videos";
+import { createKvContactSubmissionRecord } from "@/lib/kv/contactSubmissionCore";
+import { mergeStoredVideosWithStaticSeeds } from "@/lib/kv/contentStoreCore";
 
 const keys = {
   commentsIndex: "content:comments:index",
@@ -35,6 +37,7 @@ const keys = {
   home: "content:settings:home",
   postSubmissionsIndex: "content:post-submissions:index",
   postsIndex: "content:posts:index",
+  videosDeletedIndex: "content:videos:deleted:index",
   videosIndex: "content:videos:index"
 };
 
@@ -121,22 +124,6 @@ function videoToPublic(video: KvVideo): DirtyVideo {
   };
 }
 
-function seedVideo(video: DirtyVideo): KvVideo {
-  return {
-    category: video.category,
-    created_at: video.publishedAt,
-    description: video.description,
-    host: video.host,
-    id: video.id,
-    is_featured: video.isFeatured,
-    published_at: video.publishedAt,
-    status: video.status,
-    title: video.title,
-    updated_at: video.publishedAt,
-    youtube_id: video.youtubeId
-  };
-}
-
 export async function getKvPublicPosts() {
   const posts = await readMany<KvDirtyNewsPost>(keys.postsIndex, (id) => keyFor("posts", id));
   return posts
@@ -163,9 +150,10 @@ export async function getKvVisibleCommentsForPost(postId: string) {
 
 export async function getKvVideos() {
   const videos = await readMany<KvVideo>(keys.videosIndex, (id) => keyFor("videos", id));
-  return [...videos, ...dirtyVideos.filter((video) => !videos.some((item) => item.id === video.id)).map(seedVideo)]
+  const deletedVideoIds = new Set(await getIndex(keys.videosDeletedIndex));
+  return mergeStoredVideosWithStaticSeeds(videos, dirtyVideos, deletedVideoIds)
     .sort(byPublishedDesc)
-    .map(videoToPublic);
+    .map((video) => videoToPublic(video as KvVideo));
 }
 
 export async function getKvHomeSettings(): Promise<KvHomeSettings> {
@@ -201,22 +189,11 @@ export async function createKvContactSubmission(input: ContactSubmissionInput) {
   }
 
   const timestamp = nowIso();
-  const data: KvContactSubmission = {
-    admin_notes: null,
-    attachment_url: validated.data.attachmentUrl ?? null,
-    can_read_on_air: validated.data.canReadOnAir,
-    created_at: timestamp,
-    email: validated.data.email,
-    id: createId("contact"),
-    message: validated.data.message,
-    name: validated.data.name,
-    reviewed_at: null,
-    reviewed_by: null,
-    status: "pending",
-    subject: validated.data.subject,
-    submission_type: validated.data.submissionType,
-    updated_at: timestamp
-  };
+  const data: KvContactSubmission = createKvContactSubmissionRecord(
+    validated.data,
+    createId("contact"),
+    timestamp
+  );
   await writeJsonKey(keyFor("contact-submissions", data.id), data);
   await addToIndex(keys.contactIndex, data.id);
   return { data: { created_at: data.created_at, id: data.id }, ok: true as const };
@@ -487,10 +464,12 @@ export async function upsertKvVideo(formData: FormData) {
     youtube_id: youtubeId
   };
   await writeJsonKey(keyFor("videos", id), video);
+  await removeFromIndex(keys.videosDeletedIndex, id);
   await addToIndex(keys.videosIndex, id);
 }
 
 export async function deleteKvVideo(id: string) {
   await deleteJsonKey(keyFor("videos", id));
   await removeFromIndex(keys.videosIndex, id);
+  await addToIndex(keys.videosDeletedIndex, id);
 }
