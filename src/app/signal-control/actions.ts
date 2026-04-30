@@ -4,10 +4,12 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { DIRTYFM_ACCESS_TOKEN_COOKIE } from "@/lib/authSession";
 import { isKvContentBackend } from "@/lib/contentBackend";
+import { createDirtyNewsDraftFromContact } from "@/lib/contactToDirtyNews";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import { requireAdmin } from "@/lib/db/admin";
 import { validatePostSubmission } from "@/lib/contentValidation";
 import {
+  convertKvContactToPostSubmission,
   deleteKvComment,
   deleteKvContactSubmission,
   deleteKvPost,
@@ -90,6 +92,69 @@ export async function updateContactSubmission(formData: FormData) {
 
   if (error) {
     throwAdminMutationError("Contact update failed", error);
+  }
+
+  revalidatePath("/signal-control");
+}
+
+export async function convertContactToDirtyNewsSubmission(formData: FormData) {
+  const { profile, supabase } = await getAdminContext();
+  const id = getRequiredString(formData, "id");
+  const category = formData.get("category");
+
+  if (isKvContentBackend()) {
+    await convertKvContactToPostSubmission(id, category, profile.user_id);
+    revalidatePath("/signal-control");
+    return;
+  }
+
+  if (!supabase) {
+    throw new Error("Supabase admin client missing.");
+  }
+
+  const { data: contact, error: contactError } = await supabase
+    .from("contact_submissions")
+    .select("id, name, email, subject, submission_type, message, attachment_url, can_read_on_air")
+    .eq("id", id)
+    .single();
+
+  if (contactError || !contact) {
+    throwAdminMutationError("Contact conversion lookup failed", contactError);
+  }
+
+  const draft = createDirtyNewsDraftFromContact(contact, category);
+  const validated = validatePostSubmission(draft);
+
+  if (!validated.ok) {
+    throw new Error(Object.values(validated.errors).join(" "));
+  }
+
+  const { error: submissionError } = await supabase.from("post_submissions").insert({
+    admin_notes: draft.adminNotes,
+    body: validated.data.body,
+    category: validated.data.category,
+    email: validated.data.email,
+    name: validated.data.name,
+    source_url: validated.data.sourceUrl ?? null,
+    status: "pending",
+    title: validated.data.title
+  });
+
+  if (submissionError) {
+    throwAdminMutationError("Contact conversion insert failed", submissionError);
+  }
+
+  const { error: contactUpdateError } = await supabase
+    .from("contact_submissions")
+    .update({
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: profile.user_id,
+      status: "approved"
+    })
+    .eq("id", id);
+
+  if (contactUpdateError) {
+    throwAdminMutationError("Contact conversion status update failed", contactUpdateError);
   }
 
   revalidatePath("/signal-control");

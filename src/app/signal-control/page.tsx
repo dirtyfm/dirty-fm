@@ -27,6 +27,7 @@ import {
   deletePost,
   deletePostSubmission,
   deleteVideo,
+  convertContactToDirtyNewsSubmission,
   hideComment,
   publishPostSubmission,
   restoreComment,
@@ -303,6 +304,31 @@ function ContactList({ contacts }: { contacts: AdminDashboardContact[] }) {
             {contact.can_read_on_air ? "yes" : "no"}
           </p>
           <p className="mt-3 text-dirty-ash">{excerpt(contact.message)}</p>
+          <form action={convertContactToDirtyNewsSubmission} className="mt-4 grid gap-3 border-t border-[rgba(214,184,74,0.3)] pt-4">
+            <input name="id" type="hidden" value={contact.id} />
+            {!contact.can_read_on_air ? (
+              <p className="border-l-4 border-dirty-yellow bg-dirty-yellow/10 p-3 font-utility text-xs font-black uppercase text-dirty-yellow">
+                No read-on-air consent. Review before you air this mess.
+              </p>
+            ) : null}
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_auto] min-[760px]:items-end">
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Dirty News Bucket
+                </span>
+                <select className={adminFieldBase} defaultValue="Open Mic" name="category">
+                  {postSubmissionCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button className="button button-primary" type="submit">
+                Draft Dirty News File
+              </button>
+            </div>
+          </form>
           <form action={updateContactSubmission} className="mt-4 grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-4">
             <input name="id" type="hidden" value={contact.id} />
             <div className="grid gap-3 min-[760px]:grid-cols-[12rem_minmax(0,1fr)_auto] min-[760px]:items-end">
@@ -429,7 +455,7 @@ function SubmissionList({ submissions }: { submissions: AdminDashboardPostSubmis
                 <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
                   Post Author
                 </span>
-                <input className={adminFieldBase} defaultValue="DirtyFM Desk" name="author" />
+                <input className={adminFieldBase} defaultValue={submission.name} name="author" />
               </label>
               <label className="grid gap-1">
                 <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">

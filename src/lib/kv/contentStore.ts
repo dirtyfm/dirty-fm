@@ -28,6 +28,7 @@ import type {
 } from "@/lib/kv/types";
 import type { DirtyNewsPost } from "@/data/posts";
 import type { DirtyVideo, VideoStatus } from "@/data/videos";
+import { createDirtyNewsDraftFromContact } from "@/lib/contactToDirtyNews";
 import { createKvContactSubmissionRecord } from "@/lib/kv/contactSubmissionCore";
 import { mergeStoredVideosWithStaticSeeds } from "@/lib/kv/contentStoreCore";
 
@@ -331,6 +332,44 @@ export async function updateKvContactSubmission(id: string, status: ContactSubmi
     status,
     updated_at: nowIso()
   });
+}
+
+export async function convertKvContactToPostSubmission(id: string, category: unknown, profileId: string) {
+  const existing = await readJsonKey<KvContactSubmission | null>(keyFor("contact-submissions", id), null);
+  if (!existing) throw new Error("Contact submission not found.");
+
+  const draft = createDirtyNewsDraftFromContact(existing, category);
+  const validated = validatePostSubmission(draft);
+  if (!validated.ok) throw new Error(Object.values(validated.errors).join(" "));
+
+  const timestamp = nowIso();
+  const postSubmission: KvPostSubmission = {
+    admin_notes: draft.adminNotes,
+    body: validated.data.body,
+    category: validated.data.category,
+    created_at: timestamp,
+    email: validated.data.email,
+    id: createId("submission"),
+    name: validated.data.name,
+    reviewed_at: null,
+    reviewed_by: null,
+    source_url: validated.data.sourceUrl ?? null,
+    status: "pending",
+    title: validated.data.title,
+    updated_at: timestamp
+  };
+
+  await writeJsonKey(keyFor("post-submissions", postSubmission.id), postSubmission);
+  await addToIndex(keys.postSubmissionsIndex, postSubmission.id);
+  await writeJsonKey(keyFor("contact-submissions", id), {
+    ...existing,
+    reviewed_at: timestamp,
+    reviewed_by: profileId,
+    status: "approved",
+    updated_at: timestamp
+  });
+
+  return postSubmission;
 }
 
 export async function deleteKvContactSubmission(id: string) {
