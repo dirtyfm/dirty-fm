@@ -14,6 +14,11 @@ import {
   isPostSubmissionStatus
 } from "@/lib/submissionWorkflows";
 
+function throwAdminMutationError(label: string, error: unknown): never {
+  console.error(label, error);
+  throw new Error("Signal Control could not complete that protected action.");
+}
+
 async function getAdminContext() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(DIRTYFM_ACCESS_TOKEN_COOKIE)?.value;
@@ -58,7 +63,7 @@ export async function updateContactSubmission(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    throw new Error(`Contact update failed: ${error.message}`);
+    throwAdminMutationError("Contact update failed", error);
   }
 
   revalidatePath("/signal-control");
@@ -70,7 +75,7 @@ export async function deleteContactSubmission(formData: FormData) {
   const { error } = await supabase.from("contact_submissions").delete().eq("id", id);
 
   if (error) {
-    throw new Error(`Contact delete failed: ${error.message}`);
+    throwAdminMutationError("Contact delete failed", error);
   }
 
   revalidatePath("/signal-control");
@@ -115,7 +120,7 @@ export async function updatePostSubmission(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    throw new Error(`Dirty News submission update failed: ${error.message}`);
+    throwAdminMutationError("Dirty News submission update failed", error);
   }
 
   revalidatePath("/signal-control");
@@ -160,7 +165,7 @@ export async function publishPostSubmission(formData: FormData) {
   });
 
   if (postError) {
-    throw new Error(`Post creation failed: ${postError.message}`);
+    throwAdminMutationError("Post creation failed", postError);
   }
 
   const { error: submissionError } = await supabase
@@ -180,7 +185,7 @@ export async function publishPostSubmission(formData: FormData) {
     .eq("id", id);
 
   if (submissionError) {
-    throw new Error(`Submission status update failed: ${submissionError.message}`);
+    throwAdminMutationError("Submission status update failed", submissionError);
   }
 
   revalidatePath("/signal-control");
@@ -193,7 +198,7 @@ export async function deletePostSubmission(formData: FormData) {
   const { error } = await supabase.from("post_submissions").delete().eq("id", id);
 
   if (error) {
-    throw new Error(`Dirty News submission delete failed: ${error.message}`);
+    throwAdminMutationError("Dirty News submission delete failed", error);
   }
 
   revalidatePath("/signal-control");
@@ -208,7 +213,7 @@ async function getCommentPostSlug(commentId: string) {
     .single();
 
   if (error) {
-    throw new Error(`Comment lookup failed: ${error.message}`);
+    throwAdminMutationError("Comment lookup failed", error);
   }
 
   const { data: post, error: postError } = await supabase
@@ -218,7 +223,7 @@ async function getCommentPostSlug(commentId: string) {
     .single();
 
   if (postError) {
-    throw new Error(`Comment post lookup failed: ${postError.message}`);
+    throwAdminMutationError("Comment post lookup failed", postError);
   }
 
   return { slug: post.slug, supabase };
@@ -238,7 +243,7 @@ export async function hideComment(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    throw new Error(`Comment hide failed: ${error.message}`);
+    throwAdminMutationError("Comment hide failed", error);
   }
 
   revalidatePath("/signal-control");
@@ -258,7 +263,7 @@ export async function restoreComment(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    throw new Error(`Comment restore failed: ${error.message}`);
+    throwAdminMutationError("Comment restore failed", error);
   }
 
   revalidatePath("/signal-control");
@@ -271,7 +276,7 @@ export async function deleteComment(formData: FormData) {
   const { error } = await supabase.from("comments").delete().eq("id", id);
 
   if (error) {
-    throw new Error(`Comment delete failed: ${error.message}`);
+    throwAdminMutationError("Comment delete failed", error);
   }
 
   revalidatePath("/signal-control");

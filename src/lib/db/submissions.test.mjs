@@ -84,4 +84,40 @@ describe("public submission inserts", () => {
     assert.equal(spy.calls[0].payload.author_email, null);
     assert.equal("is_hidden" in spy.calls[0].payload, false);
   });
+
+  it("returns a generic public error when database inserts fail", async () => {
+    const client = {
+      from() {
+        return {
+          insert() {
+            return {
+              select() {
+                return {
+                  single() {
+                    return Promise.resolve({
+                      data: null,
+                      error: { message: "relation contact_submissions leaked detail" }
+                    });
+                  }
+                };
+              }
+            };
+          }
+        };
+      }
+    };
+
+    const result = await createContactSubmission(client, {
+      attachmentUrl: "https://example.com/static",
+      canReadOnAir: true,
+      email: "caller@example.com",
+      message: "This is enough usable static for the intake desk.",
+      name: "Caller",
+      subject: "Signal",
+      submissionType: "Open Mic Rant"
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.database, "Signal Control could not log that file.");
+  });
 });

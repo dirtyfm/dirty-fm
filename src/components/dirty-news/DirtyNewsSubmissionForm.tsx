@@ -32,6 +32,7 @@ function FieldError({ message }: { message?: string }) {
 
 export function DirtyNewsSubmissionForm() {
   const [values, setValues] = useState<PostSubmissionInput>(emptyValues);
+  const [honeypot, setHoneypot] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [isPending, startTransition] = useTransition();
@@ -62,7 +63,7 @@ export function DirtyNewsSubmissionForm() {
 
     startTransition(async () => {
       try {
-        const result = await submitDirtyNewsSignal(values);
+        const result = await submitDirtyNewsSignal({ ...values, honeypot });
 
         if (!result.ok) {
           setErrors(result.errors ?? {});
@@ -71,6 +72,7 @@ export function DirtyNewsSubmissionForm() {
         }
 
         setValues(emptyValues);
+        setHoneypot("");
         setStatus("success");
       } catch {
         setStatus("error");
@@ -128,6 +130,7 @@ export function DirtyNewsSubmissionForm() {
             </span>
             <input
               className={fieldBase}
+              maxLength={120}
               name="name"
               onChange={(event) => updateField("name", event.target.value)}
               placeholder="Wire Rat"
@@ -143,6 +146,7 @@ export function DirtyNewsSubmissionForm() {
             </span>
             <input
               className={fieldBase}
+              maxLength={254}
               name="email"
               onChange={(event) => updateField("email", event.target.value)}
               placeholder="you@example.com"
@@ -159,6 +163,7 @@ export function DirtyNewsSubmissionForm() {
           </span>
           <input
             className={fieldBase}
+            maxLength={180}
             name="title"
             onChange={(event) => updateField("title", event.target.value)}
             placeholder="Headline for the damage"
@@ -204,12 +209,28 @@ export function DirtyNewsSubmissionForm() {
           </span>
           <textarea
             className={cx(fieldBase, "min-h-56 resize-y leading-relaxed")}
+            maxLength={20000}
             name="body"
             onChange={(event) => updateField("body", event.target.value)}
             placeholder="Write the dispatch. Plain text only. No raw HTML, no threats, no publish button."
             value={values.body}
           />
           <FieldError message={errors.body} />
+          <p className="font-utility text-xs font-bold uppercase text-dirty-gray">
+            {values.body.length}/20000
+          </p>
+        </label>
+
+        <label className="hidden" aria-hidden="true">
+          Website
+          <input
+            autoComplete="off"
+            name="website"
+            onChange={(event) => setHoneypot(event.target.value)}
+            tabIndex={-1}
+            type="text"
+            value={honeypot}
+          />
         </label>
 
         <label className="grid gap-2">

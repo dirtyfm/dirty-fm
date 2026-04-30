@@ -46,16 +46,22 @@ export function validateContactForm(values: ContactFormValues): ContactValidatio
 
   if (!name) {
     errors.name = "Name or alias is required.";
+  } else if (name.length > 120) {
+    errors.name = "Name or alias must stay under 120 characters.";
   }
 
   if (!email) {
     errors.email = "Email is required.";
+  } else if (email.length > 254) {
+    errors.email = "Email must stay under 254 characters.";
   } else if (!emailPattern.test(email)) {
     errors.email = "Use a real email address so the signal can get answered.";
   }
 
   if (!subject) {
     errors.subject = "Subject is required.";
+  } else if (subject.length > 160) {
+    errors.subject = "Subject must stay under 160 characters.";
   }
 
   if (!submissionTypes.includes(values.submissionType as SubmissionType)) {
@@ -66,6 +72,8 @@ export function validateContactForm(values: ContactFormValues): ContactValidatio
     errors.message = "Message is required.";
   } else if (message.length < 20) {
     errors.message = "Give Drift at least 20 characters of usable static.";
+  } else if (message.length > 6000) {
+    errors.message = "Message must stay under 6000 characters.";
   }
 
   if (attachmentUrl) {

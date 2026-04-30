@@ -53,6 +53,10 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function trimmedLength(value: string) {
+  return value.trim().length;
+}
+
 function cleanText(value: string, maxLength: number) {
   return value.trim().replace(/\s+/g, " ").slice(0, maxLength);
 }
@@ -113,14 +117,20 @@ export function validateContactSubmission(
 
   if (!data.name) {
     errors.name = "Name or alias is required.";
+  } else if (trimmedLength(input.name) > 120) {
+    errors.name = "Name or alias must stay under 120 characters.";
   }
 
-  if (!emailPattern.test(data.email)) {
+  if (trimmedLength(input.email) > 254) {
+    errors.email = "Email must stay under 254 characters.";
+  } else if (!emailPattern.test(data.email)) {
     errors.email = "Use a real email address so the signal can get answered.";
   }
 
   if (!data.subject) {
     errors.subject = "Subject is required.";
+  } else if (trimmedLength(input.subject) > 160) {
+    errors.subject = "Subject must stay under 160 characters.";
   }
 
   if (!submissionTypes.includes(data.submissionType as (typeof submissionTypes)[number])) {
@@ -129,6 +139,8 @@ export function validateContactSubmission(
 
   if (data.message.length < 20) {
     errors.message = "Give Drift at least 20 characters of usable static.";
+  } else if (trimmedLength(input.message) > 6000) {
+    errors.message = "Message must stay under 6000 characters.";
   }
 
   if (Object.keys(errors).length > 0) {
@@ -153,14 +165,20 @@ export function validatePostSubmission(
 
   if (!data.name) {
     errors.name = "Name or alias is required.";
+  } else if (trimmedLength(input.name) > 120) {
+    errors.name = "Name or alias must stay under 120 characters.";
   }
 
-  if (!emailPattern.test(data.email)) {
+  if (trimmedLength(input.email) > 254) {
+    errors.email = "Email must stay under 254 characters.";
+  } else if (!emailPattern.test(data.email)) {
     errors.email = "Use a real email address.";
   }
 
   if (data.title.length < 6) {
     errors.title = "Title needs at least 6 characters.";
+  } else if (trimmedLength(input.title) > 180) {
+    errors.title = "Title must stay under 180 characters.";
   }
 
   if (!postSubmissionCategories.includes(data.category as (typeof postSubmissionCategories)[number])) {
@@ -169,6 +187,8 @@ export function validatePostSubmission(
 
   if (data.body.length < 80) {
     errors.body = "Give Signal Control at least 80 characters to inspect.";
+  } else if (trimmedLength(input.body) > 20000) {
+    errors.body = "Body must stay under 20000 characters.";
   }
 
   if (Object.keys(errors).length > 0) {

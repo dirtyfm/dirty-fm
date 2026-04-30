@@ -37,7 +37,8 @@ export async function createContactSubmission(
     .single();
 
   if (error) {
-    return { errors: { database: error.message }, ok: false as const };
+    console.error("Contact submission insert failed", error);
+    return { errors: { database: "Signal Control could not log that file." }, ok: false as const };
   }
 
   return { data, ok: true as const };
@@ -68,7 +69,8 @@ export async function createPostSubmission(
     .single();
 
   if (error) {
-    return { errors: { database: error.message }, ok: false as const };
+    console.error("Dirty News submission insert failed", error);
+    return { errors: { database: "Signal Control could not log that file." }, ok: false as const };
   }
 
   return { data, ok: true as const };
@@ -93,7 +95,8 @@ export async function createComment(supabase: DirtySupabaseClient, input: Commen
     .single();
 
   if (error) {
-    return { errors: { database: error.message }, ok: false as const };
+    console.error("Comment insert failed", error);
+    return { errors: { database: "The comment wire jammed. Try again." }, ok: false as const };
   }
 
   return { data, ok: true as const };

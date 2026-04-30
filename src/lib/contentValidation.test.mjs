@@ -79,6 +79,30 @@ describe("server-side content validation", () => {
     assert.match(result.errors.body, /4000 characters/);
   });
 
+  it("rejects public form fields above server-side max lengths instead of silently truncating", () => {
+    const contact = validateContactSubmission({
+      ...validContact,
+      message: "x".repeat(6001),
+      name: "x".repeat(121),
+      subject: "x".repeat(161)
+    });
+    const post = validatePostSubmission({
+      body: "x".repeat(20001),
+      category: "Dirty News",
+      email: "caller@example.com",
+      name: "Caller",
+      title: "x".repeat(181)
+    });
+
+    assert.equal(contact.ok, false);
+    assert.match(contact.errors.message, /6000 characters/);
+    assert.match(contact.errors.name, /120 characters/);
+    assert.match(contact.errors.subject, /160 characters/);
+    assert.equal(post.ok, false);
+    assert.match(post.errors.body, /20000 characters/);
+    assert.match(post.errors.title, /180 characters/);
+  });
+
   it("preserves script-looking comment text as plain submitted text", () => {
     const result = validateComment({
       authorName: "Wire Caller",

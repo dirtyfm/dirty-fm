@@ -1,9 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import { createComment, createPostSubmission } from "@/lib/db/submissions";
 import type { CommentInput, PostSubmissionInput } from "@/lib/contentValidation";
+import {
+  checkHoneypot,
+  checkPublicRateLimit,
+  getClientIp
+} from "@/lib/publicInputGuards";
 
 export type DirtyNewsSubmissionActionState = {
   errors?: Record<string, string>;
@@ -13,8 +19,19 @@ export type DirtyNewsSubmissionActionState = {
 export type DirtyNewsCommentActionState = DirtyNewsSubmissionActionState;
 
 export async function submitDirtyNewsSignal(
-  input: PostSubmissionInput
+  input: PostSubmissionInput & { honeypot?: string }
 ): Promise<DirtyNewsSubmissionActionState> {
+  if (checkHoneypot(input.honeypot)) {
+    return { errors: { body: "The spam wire tripped." }, ok: false };
+  }
+
+  const headersList = await headers();
+  const rateLimit = checkPublicRateLimit("dirty-news", getClientIp(headersList));
+
+  if (!rateLimit.ok) {
+    return { errors: { body: "Too much static too fast. Wait a minute and try again." }, ok: false };
+  }
+
   const supabase = createSupabaseServerClient();
   const result = await createPostSubmission(supabase, input);
 
@@ -28,8 +45,15 @@ export async function submitDirtyNewsSignal(
 export async function submitDirtyNewsComment(
   input: CommentInput & { honeypot?: string; postSlug: string }
 ): Promise<DirtyNewsCommentActionState> {
-  if (input.honeypot?.trim()) {
+  if (checkHoneypot(input.honeypot)) {
     return { errors: { body: "The static tripped the spam wire." }, ok: false };
+  }
+
+  const headersList = await headers();
+  const rateLimit = checkPublicRateLimit("comment", getClientIp(headersList));
+
+  if (!rateLimit.ok) {
+    return { errors: { body: "Too much static too fast. Wait a minute and try again." }, ok: false };
   }
 
   const supabase = createSupabaseServerClient();

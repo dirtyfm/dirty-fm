@@ -41,6 +41,7 @@ function FieldError({ message }: { message?: string }) {
 
 export function SendSignalForm() {
   const [values, setValues] = useState<ContactFormValues>(emptyContactFormValues);
+  const [honeypot, setHoneypot] = useState("");
   const [errors, setErrors] = useState<ContactValidationErrors & Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [isPending, startTransition] = useTransition();
@@ -77,7 +78,7 @@ export function SendSignalForm() {
 
     startTransition(async () => {
       try {
-        const result = await submitContactSignal(values);
+        const result = await submitContactSignal({ ...values, website: honeypot });
 
         if (!result.ok) {
           setErrors(result.errors ?? {});
@@ -87,6 +88,7 @@ export function SendSignalForm() {
 
         setStatus("success");
         setValues(emptyContactFormValues);
+        setHoneypot("");
       } catch {
         setStatus("error");
       }
@@ -150,6 +152,7 @@ export function SendSignalForm() {
             </span>
             <input
               className={fieldBase}
+              maxLength={120}
               name="name"
               onChange={(event) => updateField("name", event.target.value)}
               placeholder="Static Caller"
@@ -165,6 +168,7 @@ export function SendSignalForm() {
             </span>
             <input
               className={fieldBase}
+              maxLength={254}
               name="email"
               onChange={(event) => updateField("email", event.target.value)}
               placeholder="you@example.com"
@@ -182,6 +186,7 @@ export function SendSignalForm() {
             </span>
             <input
               className={fieldBase}
+              maxLength={160}
               name="subject"
               onChange={(event) => updateField("subject", event.target.value)}
               placeholder="What crawled out of the wire?"
@@ -266,12 +271,28 @@ export function SendSignalForm() {
           </span>
           <textarea
             className={cx(fieldBase, "min-h-44 resize-y leading-relaxed")}
+            maxLength={6000}
             name="message"
             onChange={(event) => updateField("message", event.target.value)}
             placeholder="Say the thing. Keep threats, illegal instructions, and raw HTML out of the broadcast slot."
             value={values.message}
           />
           <FieldError message={errors.message} />
+          <p className="font-utility text-xs font-bold uppercase text-dirty-gray">
+            {values.message.length}/6000
+          </p>
+        </label>
+
+        <label className="hidden" aria-hidden="true">
+          Website
+          <input
+            autoComplete="off"
+            name="website"
+            onChange={(event) => setHoneypot(event.target.value)}
+            tabIndex={-1}
+            type="text"
+            value={honeypot}
+          />
         </label>
 
         <label className="grid gap-2">

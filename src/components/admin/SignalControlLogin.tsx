@@ -37,7 +37,7 @@ export function SignalControlLogin() {
       });
 
       if (loginError || !data.session) {
-        throw new Error(loginError?.message ?? "Signal Control rejected that login.");
+        throw new Error("Signal Control rejected that login.");
       }
 
       const response = await fetch("/auth/session", {

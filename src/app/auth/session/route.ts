@@ -5,6 +5,7 @@ import {
   getAccessTokenMaxAge,
   getRefreshTokenMaxAge
 } from "@/lib/authSession";
+import { requireAdmin } from "@/lib/db/admin";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 
 type SessionPayload = {
@@ -36,6 +37,12 @@ export async function POST(request: NextRequest) {
 
   if (error || !user) {
     return NextResponse.json({ error: "Supabase session rejected." }, { status: 401 });
+  }
+
+  try {
+    await requireAdmin(payload.accessToken);
+  } catch {
+    return NextResponse.json({ error: "Signal Control clearance rejected." }, { status: 403 });
   }
 
   const response = NextResponse.json({ ok: true });
