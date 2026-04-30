@@ -15,6 +15,30 @@ describe("KV storage adapter fallback", () => {
     await deleteJsonKey(key);
     assert.equal(await readJsonKey(key, null), null);
   });
+
+  it("uses the fallback when a read helper hits a storage error", async () => {
+    const originalError = console.error;
+    console.error = () => {};
+
+    try {
+      assert.deepEqual(
+        await __test.readJsonKeyFromNamespace(
+          {
+            async delete() {},
+            async get() {
+              throw new Error("network down");
+            },
+            async put() {}
+          },
+          "content:settings:home",
+          { title: "Fallback" }
+        ),
+        { title: "Fallback" }
+      );
+    } finally {
+      console.error = originalError;
+    }
+  });
 });
 
 describe("Cloudflare KV REST adapter", () => {
@@ -74,6 +98,18 @@ describe("Cloudflare KV REST adapter", () => {
     await assert.rejects(
       () => namespace.put("content:posts:index", "[]"),
       /Cloudflare KV write failed for content:posts:index: 403 Forbidden - bad token/
+    );
+  });
+
+  it("keeps failed direct REST reads as errors for callers that need them", async () => {
+    const namespace = __test.createCloudflareKvRestNamespace(
+      env,
+      async () => new Response("bad token", { status: 403, statusText: "Forbidden" })
+    );
+
+    await assert.rejects(
+      () => namespace.get("content:settings:home", "json"),
+      /Cloudflare KV read failed for content:settings:home: 403 Forbidden - bad token/
     );
   });
 });

@@ -146,12 +146,26 @@ export async function getDirtyfmKvNamespace() {
 }
 
 export const __test = {
-  createCloudflareKvRestNamespace
+  createCloudflareKvRestNamespace,
+  readJsonKeyFromNamespace
 };
 
 export async function readJsonKey<T>(key: string, fallback: T): Promise<T> {
   const namespace = await getDirtyfmKvNamespace();
-  return (await namespace.get<T>(key, "json")) ?? fallback;
+  return readJsonKeyFromNamespace(namespace, key, fallback);
+}
+
+async function readJsonKeyFromNamespace<T>(
+  namespace: DirtyKvNamespace,
+  key: string,
+  fallback: T
+): Promise<T> {
+  try {
+    return (await namespace.get<T>(key, "json")) ?? fallback;
+  } catch (error) {
+    console.error(`Cloudflare KV read failed for ${key}; using fallback.`, error);
+    return fallback;
+  }
 }
 
 export async function writeJsonKey<T>(key: string, value: T) {
