@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   archivedDirtyTvPosts,
+  getArchivedDirtyTvPostAnchorId,
   getArchivedDirtyTvPosts,
   getArchivedVideoEmbedUrl
 } from "./dirtyTvArchivedPosts.ts";
@@ -50,6 +51,20 @@ describe("archived Dirty TV posts", () => {
     assert.deepEqual(
       archivedDirtyTvPosts.map((post) => post.postedAtOriginal),
       ["4/18/2017", "6/20/2016", "4/19/2016", "4/13/2016", "4/12/2016", "4/12/2016"]
+    );
+  });
+
+  it("uses exact archived slugs as Dirty TV anchor IDs", () => {
+    assert.deepEqual(
+      archivedDirtyTvPosts.map((post) => getArchivedDirtyTvPostAnchorId(post)),
+      [
+        "victims-of-the-war-on-drugs-part-1",
+        "morning-show-drug-legalization",
+        "the-most-interesting-man-in-the-world-running-for-president",
+        "the-motivation",
+        "missed-the-libertarian-debate",
+        "new-morning-show"
+      ]
     );
   });
 

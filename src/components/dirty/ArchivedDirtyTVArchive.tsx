@@ -1,5 +1,8 @@
 import type { ArchivedDirtyTvPost } from "@/data/dirtyTvArchivedPosts";
-import { getArchivedVideoEmbedUrl } from "@/data/dirtyTvArchivedPosts";
+import {
+  getArchivedDirtyTvPostAnchorId,
+  getArchivedVideoEmbedUrl
+} from "@/data/dirtyTvArchivedPosts";
 import { SectionStamp } from "./SectionStamp";
 
 export type ArchivedDirtyTVArchiveProps = {
@@ -25,6 +28,7 @@ export function ArchivedDirtyTVArchive({ posts }: ArchivedDirtyTVArchiveProps) {
         {posts.map((post, postIndex) => (
           <article
             className="overflow-hidden border border-[rgba(183,178,168,0.24)] border-l-8 border-l-dirty-red bg-dirty-purple/70 shadow-signal"
+            id={getArchivedDirtyTvPostAnchorId(post)}
             key={post.slug}
           >
             <div className="grid gap-5 p-5 min-[760px]:p-6">
@@ -34,7 +38,12 @@ export function ArchivedDirtyTVArchive({ posts }: ArchivedDirtyTVArchiveProps) {
                     Archive File #{String(postIndex + 1).padStart(2, "0")}
                   </p>
                   <h2 className="font-display text-[clamp(2.2rem,8vw,5rem)] font-black uppercase leading-none text-dirty-ash">
-                    {post.title}
+                    <a
+                      className="hover:text-dirty-yellow"
+                      href={`/dirty-tv#${getArchivedDirtyTvPostAnchorId(post)}`}
+                    >
+                      {post.title}
+                    </a>
                   </h2>
                   {post.descriptionOriginal ? (
                     <p className="max-w-3xl whitespace-pre-line text-lg leading-snug text-dirty-gray">

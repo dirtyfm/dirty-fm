@@ -155,6 +155,10 @@ export function getArchivedDirtyTvPosts() {
   }));
 }
 
+export function getArchivedDirtyTvPostAnchorId(post: Pick<ArchivedDirtyTvPost, "slug">) {
+  return post.slug;
+}
+
 export function getArchivedVideoEmbedUrl(video: ArchivedVideoEmbed) {
   if (video.provider === "youtube") {
     return `https://www.youtube.com/embed/${video.videoId}`;
