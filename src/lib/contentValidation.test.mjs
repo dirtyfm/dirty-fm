@@ -68,6 +68,18 @@ describe("server-side content validation", () => {
     assert.equal("isHidden" in result.data, false);
   });
 
+  it("allows local post ids only when the KV backend asks for them", () => {
+    const input = {
+      authorEmail: "",
+      authorName: "Wire Caller",
+      body: "Let the dirty signal through.",
+      postId: "legacy-post:dirty-file-001"
+    };
+
+    assert.equal(validateComment(input).ok, false);
+    assert.equal(validateComment(input, { allowLocalPostId: true }).ok, true);
+  });
+
   it("rejects comments that blow past the public length limit", () => {
     const result = validateComment({
       authorName: "Wire Caller",

@@ -1,5 +1,6 @@
 import "server-only";
 import { dirtyVideos } from "@/data/videos";
+import { getPublishedPosts } from "@/data/posts";
 import {
   validateComment,
   validateContactSubmission,
@@ -250,7 +251,7 @@ export async function createKvPostSubmission(input: PostSubmissionInput) {
 }
 
 export async function createKvComment(input: CommentInput) {
-  const validated = validateComment(input);
+  const validated = validateComment(input, { allowLocalPostId: true });
 
   if (!validated.ok) {
     return validated;
@@ -281,7 +282,23 @@ export async function getKvAdminDashboardData() {
     readMany<KvDirtyNewsPost>(keys.postsIndex, (id) => keyFor("posts", id)),
     readMany<KvComment>(keys.commentsIndex, (id) => keyFor("comments", id))
   ]);
-  const postTitles = new Map(posts.map((post) => [post.id, post]));
+  const staticPosts = getPublishedPosts();
+  const postTitles = new Map([
+    ...staticPosts.map((post) => [
+      post.id,
+      {
+        slug: post.slug,
+        title: post.title
+      }
+    ] as const),
+    ...posts.map((post) => [
+      post.id,
+      {
+        slug: post.slug,
+        title: post.title
+      }
+    ] as const)
+  ]);
 
   return {
     comments: comments.sort(byCreatedDesc).slice(0, 8).map((comment) => ({
@@ -299,6 +316,16 @@ export async function getKvAdminDashboardData() {
     postSubmissions: postSubmissions.sort(byCreatedDesc).slice(0, 8),
     posts: posts.sort(byPublishedDesc).slice(0, 8)
   };
+}
+
+export async function getKvPostSlugForComment(commentId: string) {
+  const comment = await readJsonKey<KvComment | null>(keyFor("comments", commentId), null);
+  if (!comment) return null;
+
+  const post = await readJsonKey<KvDirtyNewsPost | null>(keyFor("posts", comment.post_id), null);
+  if (post) return post.slug;
+
+  return getPublishedPosts().find((item) => item.id === comment.post_id)?.slug ?? null;
 }
 
 export async function getKvAdminVideos() {

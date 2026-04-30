@@ -99,7 +99,7 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
 
       <SendSignalCTA
         actionLabel="Send a Signal"
-        body="Got a clip, guest idea, rant, complaint, or cursed little tape for Dirty TV? Send it in. Manual archive only for now. No YouTube API machinery yet."
+        body="Got a clip, guest idea, rant, complaint, or cursed little tape for Dirty TV? Send it in. Signal Control files the good trash into the active video stack."
         href="/contact"
         title="Got Video Trash for the Dirty Signal?"
       />

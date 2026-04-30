@@ -65,7 +65,7 @@ export default async function DirtyNewsPostPage({
   }
 
   const comments = await getVisibleCommentsForPost(post.id);
-  const canAcceptComments = isKvContentBackend() ? !post.archive : isUuid(post.id);
+  const canAcceptComments = isKvContentBackend() || isUuid(post.id);
 
   return (
     <article className="grid gap-8 min-[760px]:gap-10">
@@ -119,8 +119,9 @@ export default async function DirtyNewsPostPage({
         <aside className="grid content-start gap-4">
           <StaticPanel label="File Notes" title="No Raw HTML. No Public Posting." tone="green">
             <p className="text-sm leading-snug">
-              This post renders structured text from local content. The public
-              can send signals, but they cannot publish posts directly.
+              This post renders structured text from the active content wire.
+              The public can send signals and comments, but they cannot publish
+              posts directly.
             </p>
           </StaticPanel>
           {post.archive ? (
@@ -162,8 +163,8 @@ export default async function DirtyNewsPostPage({
             <DirtyNewsCommentForm postId={post.id} postSlug={post.slug} />
           ) : (
             <p className="max-w-3xl text-lg leading-snug text-dirty-gray">
-              This static seed file is read-only until it gets a database post ID.
-              Live Dirty News files take comments immediately.
+              This file is read-only until Signal Control gives it a live
+              comment wire.
             </p>
           )}
 

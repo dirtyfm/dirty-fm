@@ -82,7 +82,7 @@ function LoginPanel({ message }: { message?: string }) {
         items={[
           "SIGNAL CONTROL: protected admin wire",
           "PUBLIC USERS: no dashboard data",
-          "CLEARANCE: Supabase session plus admin profile",
+          "CLEARANCE: local operator session or Supabase admin profile",
           "STATUS: locked until verified"
         ]}
         label="Signal Control"
@@ -594,7 +594,7 @@ export default async function SignalControlPage() {
       <TickerBar
         items={[
           "SIGNAL CONTROL: admin session verified",
-          "MUTATIONS: intentionally limited this pass",
+          "MUTATIONS: KV-backed controls live",
           "PUBLIC WIRE: still cannot publish directly",
           `CLEARANCE: ${profile.role}`
         ]}

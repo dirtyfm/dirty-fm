@@ -36,6 +36,10 @@ export type CommentInput = {
   body: string;
 };
 
+type CommentValidationOptions = {
+  allowLocalPostId?: boolean;
+};
+
 export const postSubmissionCategories = [
   "Dirty News",
   "Rants",
@@ -52,6 +56,7 @@ export const postSubmissionCategories = [
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const localPostIdPattern = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{1,180}$/;
 
 function trimmedLength(value: string) {
   return value.trim().length;
@@ -198,7 +203,10 @@ export function validatePostSubmission(
   return { data, ok: true };
 }
 
-export function validateComment(input: CommentInput): ValidationResult<CommentInput> {
+export function validateComment(
+  input: CommentInput,
+  options: CommentValidationOptions = {}
+): ValidationResult<CommentInput> {
   const errors: Record<string, string> = {};
   const trimmedAuthorName = input.authorName.trim();
   const trimmedBody = input.body.trim();
@@ -209,7 +217,11 @@ export function validateComment(input: CommentInput): ValidationResult<CommentIn
     postId: input.postId.trim()
   };
 
-  if (!uuidPattern.test(data.postId)) {
+  const hasValidPostId = options.allowLocalPostId
+    ? localPostIdPattern.test(data.postId)
+    : uuidPattern.test(data.postId);
+
+  if (!hasValidPostId) {
     errors.postId = "Comments must attach to a real post file.";
   }
 

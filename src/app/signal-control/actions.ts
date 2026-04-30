@@ -13,6 +13,7 @@ import {
   deleteKvPost,
   deleteKvPostSubmission,
   deleteKvVideo,
+  getKvPostSlugForComment,
   publishKvPostSubmission,
   setKvCommentHidden,
   updateKvContactSubmission,
@@ -327,8 +328,10 @@ export async function hideComment(formData: FormData) {
 
   if (isKvContentBackend()) {
     await setKvCommentHidden(id, true, profile.user_id);
+    const slug = await getKvPostSlugForComment(id);
     revalidatePath("/signal-control");
     revalidatePath("/dirty-news");
+    if (slug) revalidatePath(`/dirty-news/${slug}`);
     return;
   }
 
@@ -355,8 +358,10 @@ export async function restoreComment(formData: FormData) {
 
   if (isKvContentBackend()) {
     await setKvCommentHidden(id, false);
+    const slug = await getKvPostSlugForComment(id);
     revalidatePath("/signal-control");
     revalidatePath("/dirty-news");
+    if (slug) revalidatePath(`/dirty-news/${slug}`);
     return;
   }
 
@@ -382,9 +387,11 @@ export async function deleteComment(formData: FormData) {
   const id = getRequiredString(formData, "id");
 
   if (isKvContentBackend()) {
+    const slug = await getKvPostSlugForComment(id);
     await deleteKvComment(id);
     revalidatePath("/signal-control");
     revalidatePath("/dirty-news");
+    if (slug) revalidatePath(`/dirty-news/${slug}`);
     return;
   }
 

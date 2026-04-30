@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { isKvContentBackend } from "@/lib/contentBackend";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
@@ -53,6 +54,8 @@ export async function submitContactSignal(
       return { errors: result.errors, ok: false };
     }
 
+    revalidatePath("/signal-control");
+
     return { ok: true };
   }
 
@@ -62,6 +65,8 @@ export async function submitContactSignal(
   if (!result.ok) {
     return { errors: result.errors, ok: false };
   }
+
+  revalidatePath("/signal-control");
 
   return { ok: true };
 }

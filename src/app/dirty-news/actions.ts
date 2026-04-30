@@ -42,6 +42,8 @@ export async function submitDirtyNewsSignal(
     return { errors: result.errors, ok: false };
   }
 
+  revalidatePath("/signal-control");
+
   return { ok: true };
 }
 
