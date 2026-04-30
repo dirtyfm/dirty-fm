@@ -56,17 +56,17 @@ export default function ContactPage() {
               Send a Signal. Don&apos;t Make It Boring.
             </h1>
             <p className="max-w-3xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
-              Got a rant, clip, story, complaint, guest pitch, technical
-              problem, or beautiful piece of random bullshit? Throw it into the
-              intake slot. Keep it legal enough to survive daylight.
+              Got something? A tip, a rant, a weird clip, a guest you think
+              could survive talking to Drift? Send it. Keep it legal enough
+              that we can both pretend we&apos;ve never met.
             </p>
           </div>
 
           <aside className="border-l-8 border-dirty-yellow bg-dirty-purple/75 p-5">
             <SectionStamp label="No Publish Button" kicker="Public Input" tone="yellow" />
             <p className="mt-5 font-utility text-sm font-bold uppercase leading-relaxed text-dirty-ash">
-              This is a front-door signal, not Signal Control. Public users do
-              not publish posts, moderate comments, or touch admin machinery.
+              You&apos;re at the front door. Submissions go to Signal Control for
+              review — they don&apos;t go live on their own.
             </p>
           </aside>
         </div>
@@ -102,15 +102,10 @@ export default function ContactPage() {
         <div className="grid gap-4 text-lg leading-snug text-dirty-ash min-[860px]:grid-cols-[minmax(0,1fr)_minmax(16rem,0.55fr)]">
           <div className="grid gap-4">
             <p>
-              DirtyFM wants tips, rants, clips, weird stories, guest pitches,
-              complaints, and hostile little love letters. It does not need
-              threats, doxxing, instructions for illegal acts, spam sludge, or
-              anything pretending this form is a public publishing system.
-            </p>
-            <p>
-              Submitted text is treated like plain public input. No raw HTML is
-              rendered. No secrets belong here. If this gets backend wiring
-              later, server-side validation and moderation tools come with it.
+              Send the noise, hostile little love letters included. Threats,
+              doxxing, spam, instructions for anything you&apos;d need a lawyer to
+              explain — leave those out. Everything gets read on the server side
+              as plain text. Nothing you type here goes straight to air.
             </p>
           </div>
           <div className="file-tape border-dirty-red bg-dirty-red/15 text-dirty-yellow">

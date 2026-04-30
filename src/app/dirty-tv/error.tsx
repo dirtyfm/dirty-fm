@@ -21,8 +21,7 @@ export default function DirtyTVError({
       <StaticPanel label="Tape Jam" title="Dirty TV Lost the Picture." tone="blue">
         <div className="grid gap-4">
           <p className="max-w-2xl text-lg leading-snug">
-            The video archive failed to load. Try again, or jump back to Dirty
-            News while the tape cools off.
+            Dirty TV broke. Try again or read something instead.
           </p>
           <div className="flex flex-col gap-3 min-[500px]:flex-row min-[500px]:flex-wrap">
             <button className="button button-primary" onClick={reset} type="button">

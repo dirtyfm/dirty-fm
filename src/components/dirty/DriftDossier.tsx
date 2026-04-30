@@ -12,14 +12,14 @@ export type DriftDossierProps = {
 };
 
 const defaultItems: DossierItem[] = [
-  { label: "Role", value: "Host. Loudmouth. Government problem." },
-  { label: "Known For", value: "Raw talk, bad decisions, no permission." },
-  { label: "Threat Level", value: "Respectability allergy confirmed." }
+  { label: "Role", value: "Radio host. Not by training. By insistence." },
+  { label: "Known For", value: "Letting it run too long. Usually worth it." },
+  { label: "Hazard", value: "Will ask you to explain yourself." }
 ];
 
 export function DriftDossier({
   name = "Drift",
-  summary = "The dirty signal's main problem: loud, funny, hostile to control, and not applying for your approval.",
+  summary = "Drift runs the show. Has for years. Anti-government, pro-open mic, allergic to the kind of person who thinks speech needs to be approved before it leaves your mouth.",
   items = defaultItems
 }: DriftDossierProps) {
   return (

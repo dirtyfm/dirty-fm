@@ -6,7 +6,7 @@ export async function getKvHomeSettings(): Promise<KvHomeSettings> {
   return readJsonKey<KvHomeSettings>(keys.home, {
     hero_aside: "Pirate radio for the unmanageable.",
     hero_body:
-      "Raw radio, prank-call chaos, dark comedy, anti-control noise, and random fucking bullshit from Drift and whoever gets close enough to the mic.",
+      "Drift keeps the mic on. Nobody asked him to and he doesn't care. Prank calls, rants, drug war breakdowns, and whatever stumbles through the door. Free speech with a hangover.",
     hero_eyebrow: "Hero / Dirty Signal",
     hero_title: "DirtyFM Is the Signal They Forgot to Kill.",
     id: "home",

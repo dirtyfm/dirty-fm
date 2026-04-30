@@ -9,8 +9,8 @@ export type SendSignalCTAProps = {
 };
 
 export function SendSignalCTA({
-  title = "Got a rant, clip, story, complaint, conspiracy, insult, or bad idea?",
-  body = "Send it in. Keep it readable. Do not make it boring.",
+  title = "Got something for the broadcast?",
+  body = "Send it in. Keep it readable. Don't make it boring.",
   href = "/contact",
   actionLabel = "Send a Signal"
 }: SendSignalCTAProps) {

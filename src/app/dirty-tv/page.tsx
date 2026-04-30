@@ -10,7 +10,6 @@ import { getArchivedDirtyTvPosts } from "@/data/dirtyTvArchivedPosts";
 import {
   getPublicFeaturedVideo,
   getPublicVideoCategories,
-  getPublicVideos,
   getPublicVideosByCategory
 } from "@/lib/db/videos";
 
@@ -34,7 +33,6 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
     ? requestedCategory
     : undefined;
   const videos = await getPublicVideosByCategory(selectedCategory);
-  const allVideos = await getPublicVideos();
   const featuredVideo = selectedCategory
     ? videos[0] ?? await getPublicFeaturedVideo()
     : await getPublicFeaturedVideo();
@@ -54,11 +52,9 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
             Watch the Damage.
           </h1>
           <p className="max-w-3xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
-            Current Dirty TV is wired back into the wall: {allVideos.length} active
-            clips in the player, plus the old tape shelf below with {posts.length}
-            {" "}
-            legacy posts and {archivedVideoCount} embedded clips. No fake polish,
-            no cleaned-up archive bodies.
+            Active clips in the player up top. Below that, the old archive —{" "}
+            {posts.length} posts from the original site, {archivedVideoCount}{" "}
+            embedded videos, dates and typos preserved as found.
           </p>
         </div>
       </section>

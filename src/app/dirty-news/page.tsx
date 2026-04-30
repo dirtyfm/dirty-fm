@@ -57,9 +57,10 @@ export default async function DirtyNewsPage({
             Notes From the Wrong Side of the Broadcast.
           </h1>
           <p className="max-w-3xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
-            Rants, clips, arguments, updates, and whatever crawled out of the
-            DirtyFM wire. Published files only. Drafts stay locked in Signal
-            Control until somebody with keys makes the mess public.
+            Drift&apos;s written output plus whatever the open mic dragged in.
+            Archived posts from the old site, new dispatches, arguments without
+            a clear winner. Everything here went through Signal Control before
+            it got here.
           </p>
         </div>
       </section>

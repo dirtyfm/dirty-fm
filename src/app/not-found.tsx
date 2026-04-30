@@ -18,8 +18,8 @@ export default function NotFound() {
             The Signal Fell Through the Floor.
           </h1>
           <p className="max-w-3xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
-            This file is not in the DirtyFM archive. Maybe it got moved, maybe
-            it never existed, maybe the tape shelf finally bit back.
+            You went somewhere that doesn&apos;t exist. It might have existed once.
+            Either way, you&apos;re here now.
           </p>
           <div className="flex flex-col gap-3 min-[500px]:flex-row min-[500px]:flex-wrap">
             <DirtyButton href="/">Back to Signal</DirtyButton>
@@ -34,8 +34,8 @@ export default function NotFound() {
       </section>
       <StaticPanel label="Archive Note" title="No Generic Dead End." tone="yellow">
         <p className="max-w-2xl text-lg leading-snug">
-          DirtyFM keeps the ugly stuff readable. Even the missing pages get a
-          warning label.
+          You went somewhere that doesn&apos;t exist. It might have existed once.
+          Either way, you&apos;re here now.
         </p>
       </StaticPanel>
     </div>

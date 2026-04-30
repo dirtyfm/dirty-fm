@@ -21,8 +21,7 @@ export default function SignalControlError({
       <StaticPanel label="Console Fault" title="Signal Control Hit Static." tone="red">
         <div className="grid gap-4">
           <p className="max-w-2xl text-lg leading-snug">
-            The admin console could not load. Retry the protected room, or go
-            back to the public signal.
+            Signal Control hit an error. Retry or go back to the public side.
           </p>
           <div className="flex flex-col gap-3 min-[500px]:flex-row min-[500px]:flex-wrap">
             <button className="button button-primary" onClick={reset} type="button">

@@ -21,8 +21,7 @@ export default function DirtyNewsError({
       <StaticPanel label="Feed Jam" title="Dirty News Hit Bad Static." tone="red">
         <div className="grid gap-4">
           <p className="max-w-2xl text-lg leading-snug">
-            The archive could not load this pass. Try the drawer again, or get
-            back to the main signal.
+            Dirty News couldn&apos;t load. Hit retry or go back to the main feed.
           </p>
           <div className="flex flex-col gap-3 min-[500px]:flex-row min-[500px]:flex-wrap">
             <button className="button button-primary" onClick={reset} type="button">

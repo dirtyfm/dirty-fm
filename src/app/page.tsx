@@ -24,24 +24,24 @@ import { getPublicFeaturedVideo, getPublicVideos } from "@/lib/db/videos";
 import { getKvHomeSettings } from "@/lib/kv/contentStore";
 
 const dirtyFeed = [
-  "LIVE WIRE: Drift is still not applying for approval",
+  "DRIFT: still on air, still not asking",
   "FILE STATUS: random bullshit with a signal",
-  "WARNING: corporate-safe opinions not detected",
-  "ARCHIVE NOTE: prank calls, rants, dirty news, video trash"
+  "NOTE: free speech, dark comedy, and a war on drugs argument from 2016",
+  "SIGNAL: the archive is intact and the mic still works"
 ];
 
 const driftFiles = [
   {
-    label: "Broadcast Role",
-    value: "Outlaw host, static conductor, and the wrong guy near the mic."
+    label: "Role",
+    value: "Radio host. Not by training. By insistence."
   },
   {
-    label: "Operational Habit",
-    value: "Insults the machinery, lets the loudmouths talk, keeps moving."
+    label: "Known For",
+    value: "Letting it run too long. Usually worth it."
   },
   {
-    label: "Control Problem",
-    value: "Government overreach, speech managers, and fake politeness."
+    label: "Hazard",
+    value: "Will ask you to explain yourself."
   }
 ];
 
@@ -157,14 +157,15 @@ export default async function Home() {
         <div className="grid gap-5 text-lg leading-snug text-dirty-ash min-[860px]:grid-cols-[minmax(0,0.95fr)_minmax(16rem,0.55fr)]">
           <div className="grid gap-4">
             <p>
-              DirtyFM is unfiltered comedy radio, video trash, prank-call
-              wreckage, Dirty News, and anti-control commentary shoved through a
-              busted late-night signal.
+              DirtyFM is Drift&apos;s show. He&apos;s been doing it since before it was
+              a website. Prank calls, rants, morning show wreckage, a
+              constitutional argument about the war on drugs, and a clip of
+              three drunk guys in what appears to be a garage. That&apos;s the
+              archive. That&apos;s the show.
             </p>
             <p>
-              Sometimes it is political. Sometimes it is stupid. Sometimes it is
-              funny for the wrong reasons. The point is that nobody pre-chewed
-              it into a polite little content pellet.
+              Sometimes political. Sometimes stupid. Sometimes funny for the
+              exact wrong reasons. Nobody pre-chewed it for you.
             </p>
           </div>
           <div className="file-tape">
@@ -177,7 +178,7 @@ export default async function Home() {
       <section id="drift-files" className="scroll-mt-8">
         <DriftDossier
           items={driftFiles}
-          summary="Drift is the dirty signal's main problem: loud, funny, hostile to control, curious about other dissenters, and not here to become respectable for your comfort."
+          summary="Drift runs the show. Has for years. Anti-government, pro-open mic, allergic to the kind of person who thinks speech needs to be approved before it leaves your mouth."
         />
       </section>
 
@@ -274,7 +275,7 @@ export default async function Home() {
       />
 
       <SendSignalCTA
-        body="Got a rant, clip, story, complaint, conspiracy, insult, or bad idea? Send it in. Keep it readable. Do not make it boring."
+        body="Got something for the broadcast? Send it in. Keep it readable. Don't make it boring."
         href="/contact"
         title="Send a Signal Before the Static Eats It."
       />

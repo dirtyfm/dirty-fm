@@ -18,7 +18,7 @@ export function SiteHeader() {
         <span className="relative w-fit font-display text-[clamp(2.4rem,8vw,4.5rem)] font-black uppercase leading-[0.82] text-dirty-red [text-shadow:0.06em_0.04em_0_rgba(209,42,31,0.28)] after:absolute after:inset-x-0 after:top-1/2 after:h-1 after:-translate-y-1/2 after:bg-dirty-black/70 group-hover:text-dirty-yellow">
           DirtyFM
         </span>
-        <span className="brand-tag">Raw Signal / No Permission / 24 Hour Static</span>
+        <span className="brand-tag">Raw Signal / No Permission</span>
       </Link>
       <nav
         className="-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 pb-1 min-[760px]:mx-0 min-[760px]:max-w-[36rem] min-[760px]:flex-wrap min-[760px]:justify-end min-[760px]:overflow-visible min-[760px]:px-0 min-[760px]:pb-0"
