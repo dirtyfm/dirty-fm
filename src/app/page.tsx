@@ -38,7 +38,7 @@ const newsPosts = [
     title: "Today's Bullshit, Dragged Into the Light",
     excerpt:
       "Notes from the dirty signal: bad rules, worse explanations, and Drift asking why everyone sounds like a nervous memo.",
-    href: "/dirty-news",
+    href: "/dirty-news/machine-found-another-clipboard",
     category: "Government Bullshit",
     dateLabel: "Latest Drop"
   },
@@ -46,7 +46,7 @@ const newsPosts = [
     title: "The Culture Police Need a Worse Job",
     excerpt:
       "A dirty little dispatch about fake politeness, managed speech, and why every sentence does not need a safety helmet.",
-    href: "/dirty-news",
+    href: "/dirty-news/public-access-hell-has-better-standards",
     category: "Fuck the Machine",
     dateLabel: "Signal Log"
   },
@@ -54,7 +54,7 @@ const newsPosts = [
     title: "Open Mic Degeneracy Report",
     excerpt:
       "Listener noise, bad ideas, cracked jokes, complaints, and whatever else crawled out of the broadcast slot.",
-    href: "/dirty-news",
+    href: "/dirty-news/open-mic-degeneracy-report-static-edition",
     category: "Open Mic",
     dateLabel: "Archive Note"
   }
