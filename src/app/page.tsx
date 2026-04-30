@@ -10,6 +10,10 @@ import {
   TickerBar,
   VideoTrashCard
 } from "@/components/dirty";
+import {
+  archivedDirtyTvYouTubeChannelUrl,
+  getArchivedDirtyTvHomePreviewCards
+} from "@/data/dirtyTvArchivedPosts";
 import { formatPostDate } from "@/data/posts";
 import { getPublicDirtyNewsPosts } from "@/lib/db/posts";
 
@@ -35,35 +39,12 @@ const driftFiles = [
   }
 ];
 
-const videos = [
-  {
-    title: "Dirty Signal Test: Do Not Sanitize",
-    href: "/dirty-tv",
-    category: "Video Trash",
-    runtime: "12:08",
-    status: "Unapproved Clip"
-  },
-  {
-    title: "Public Access Hell With Drift",
-    href: "/dirty-tv",
-    category: "Dirty TV",
-    runtime: "08:44",
-    status: "Banned Vibe"
-  },
-  {
-    title: "Bad Calls. Worse Judgment.",
-    href: "/dirty-tv",
-    category: "Prank Archive",
-    runtime: "16:20",
-    status: "Raw Clip"
-  }
-];
-
 function getPostDateLabel(post: Awaited<ReturnType<typeof getPublicDirtyNewsPosts>>[number]) {
   return post.archive?.publishedAtOriginal ?? formatPostDate(post.publishedAt);
 }
 
 export default async function Home() {
+  const dirtyTvPreviewCards = getArchivedDirtyTvHomePreviewCards();
   const newsPosts = (await getPublicDirtyNewsPosts()).slice(0, 3).map((post) => ({
     title: post.title,
     excerpt: post.excerpt,
@@ -203,12 +184,22 @@ export default async function Home() {
       <section className="grid gap-5">
         <div className="flex flex-col gap-4 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
           <SectionStamp label="Video Trash" kicker="Dirty TV" tone="blue" />
-          <DirtyButton href="/dirty-tv" variant="secondary">
-            Open Dirty TV
-          </DirtyButton>
+          <div className="flex flex-col gap-3 min-[500px]:flex-row min-[500px]:flex-wrap">
+            <DirtyButton href="/dirty-tv" variant="secondary">
+              Open Dirty TV
+            </DirtyButton>
+            <DirtyButton
+              href={archivedDirtyTvYouTubeChannelUrl}
+              rel="noreferrer"
+              target="_blank"
+              variant="ghost"
+            >
+              YouTube Channel
+            </DirtyButton>
+          </div>
         </div>
-        <div className="grid gap-4 min-[760px]:grid-cols-3">
-          {videos.map((video) => (
+        <div className="grid gap-4 min-[760px]:grid-cols-2 min-[1120px]:grid-cols-3">
+          {dirtyTvPreviewCards.map((video) => (
             <VideoTrashCard key={video.title} {...video} />
           ))}
         </div>

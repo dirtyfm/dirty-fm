@@ -19,6 +19,11 @@ export type ArchivedDirtyTvPost = {
   comments: [];
 };
 
+export type ArchivedDirtyTvHomePreviewItem = {
+  slug: string;
+  caption: string | null;
+};
+
 // Archive text intentionally preserves original titles, dates, descriptions,
 // legacy URLs, providers, embed source paths, and original comment counts.
 export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
@@ -147,6 +152,37 @@ export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
   }
 ];
 
+export const archivedDirtyTvYouTubeChannelUrl =
+  "https://www.youtube.com/channel/UCLPUDXewLMdJEq9oWRn1JOg";
+
+// Home.html DirtyTV references. Captions are preserved exactly when present.
+export const archivedDirtyTvHomePreviewItems: ArchivedDirtyTvHomePreviewItem[] = [
+  {
+    slug: "new-morning-show",
+    caption: "Morning Show 1/10/16"
+  },
+  {
+    slug: "missed-the-libertarian-debate",
+    caption: "If you missed the libertarian debate..."
+  },
+  {
+    slug: "the-motivation",
+    caption: "Check out The Motivation"
+  },
+  {
+    slug: "the-most-interesting-man-in-the-world-running-for-president",
+    caption: null
+  },
+  {
+    slug: "morning-show-drug-legalization",
+    caption: "Drug Legalization Morning Show"
+  },
+  {
+    slug: "victims-of-the-war-on-drugs-part-1",
+    caption: "Victims Of The War On Drugs Part 1"
+  }
+];
+
 export function getArchivedDirtyTvPosts() {
   return archivedDirtyTvPosts.map((post) => ({
     ...post,
@@ -157,6 +193,24 @@ export function getArchivedDirtyTvPosts() {
 
 export function getArchivedDirtyTvPostAnchorId(post: Pick<ArchivedDirtyTvPost, "slug">) {
   return post.slug;
+}
+
+export function getArchivedDirtyTvHomePreviewCards() {
+  return archivedDirtyTvHomePreviewItems.map((item) => {
+    const post = archivedDirtyTvPosts.find((candidate) => candidate.slug === item.slug);
+
+    if (!post) {
+      throw new Error(`Missing archived DirtyTV post for Home.html preview: ${item.slug}`);
+    }
+
+    return {
+      title: item.caption ?? post.title,
+      href: `/dirty-tv#${getArchivedDirtyTvPostAnchorId(post)}`,
+      category: "Archived Home.html",
+      runtime: `Posted ${post.postedAtOriginal}`,
+      status: post.videos[0]?.provider === "vimeo" ? "Vimeo File" : "YouTube File"
+    };
+  });
 }
 
 export function getArchivedVideoEmbedUrl(video: ArchivedVideoEmbed) {

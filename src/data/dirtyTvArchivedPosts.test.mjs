@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   archivedDirtyTvPosts,
+  archivedDirtyTvYouTubeChannelUrl,
+  getArchivedDirtyTvHomePreviewCards,
   getArchivedDirtyTvPostAnchorId,
   getArchivedDirtyTvPosts,
   getArchivedVideoEmbedUrl
@@ -65,6 +67,41 @@ describe("archived Dirty TV posts", () => {
         "missed-the-libertarian-debate",
         "new-morning-show"
       ]
+    );
+  });
+
+  it("builds Home.html preview cards against current Dirty TV route anchors", () => {
+    assert.deepEqual(
+      getArchivedDirtyTvHomePreviewCards().map((card) => card.href),
+      [
+        "/dirty-tv#new-morning-show",
+        "/dirty-tv#missed-the-libertarian-debate",
+        "/dirty-tv#the-motivation",
+        "/dirty-tv#the-most-interesting-man-in-the-world-running-for-president",
+        "/dirty-tv#morning-show-drug-legalization",
+        "/dirty-tv#victims-of-the-war-on-drugs-part-1"
+      ]
+    );
+  });
+
+  it("preserves Home.html DirtyTV captions exactly when displayed", () => {
+    assert.deepEqual(
+      getArchivedDirtyTvHomePreviewCards().map((card) => card.title),
+      [
+        "Morning Show 1/10/16",
+        "If you missed the libertarian debate...",
+        "Check out The Motivation",
+        "The Most Interesting Man In The World Running For President",
+        "Drug Legalization Morning Show",
+        "Victims Of The War On Drugs Part 1"
+      ]
+    );
+  });
+
+  it("preserves the Home.html YouTube channel CTA URL", () => {
+    assert.equal(
+      archivedDirtyTvYouTubeChannelUrl,
+      "https://www.youtube.com/channel/UCLPUDXewLMdJEq9oWRn1JOg"
     );
   });
 
