@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dirty-black: #080807;
+  --color-dirty-gray: #b7b2a8;
+  --color-dirty-red: #d12a1f;
+  --color-dirty-yellow: #d6b84a;
+  --color-dirty-green: #4e6b4a;
+  --color-dirty-purple: #3b263f;
+  --color-dirty-blue: #2d4f73;
+  --color-dirty-ash: #ded8c9;
+  --color-dirty-coal: #12110f;
+  --font-display: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  --font-body: Inter, "IBM Plex Sans", Arial, sans-serif;
+  --font-utility: "IBM Plex Mono", "Courier New", monospace;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-width: 320px;
+    background: var(--color-dirty-black);
+    color: var(--color-dirty-gray);
+    text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background:
+      linear-gradient(135deg, rgba(59, 38, 63, 0.36), transparent 34rem),
+      linear-gradient(180deg, rgba(8, 8, 7, 0.92), rgba(8, 8, 7, 1)),
+      var(--color-dirty-black);
+    color: var(--color-dirty-gray);
+    font-family: var(--font-body);
+    line-height: 1.6;
+  }
+
+  body::before {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(183, 178, 168, 0.04) 0,
+      rgba(183, 178, 168, 0.04) 1px,
+      transparent 1px,
+      transparent 5px
+    );
+    opacity: 0.34;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-color: rgba(214, 184, 74, 0.7);
+    text-decoration-thickness: 0.1em;
+    text-underline-offset: 0.2em;
+  }
+
+  a:hover,
+  a:focus-visible {
+    color: var(--color-dirty-yellow);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-dirty-yellow);
+    outline-offset: 4px;
+  }
+
+  ::selection {
+    background: var(--color-dirty-red);
+    color: var(--color-dirty-black);
+  }
+}
+
+@layer components {
+  .brand-tag,
+  .eyebrow,
+  .card-label,
+  .footer-kicker {
+    @apply font-utility text-xs font-bold uppercase tracking-[0.08em] text-dirty-yellow;
+  }
+
+  .nav-link {
+    @apply flex-1 border border-[rgba(183,178,168,0.24)] bg-dirty-coal/70 px-3 py-3 text-center font-utility text-xs font-bold uppercase leading-none text-dirty-gray no-underline transition-colors hover:border-dirty-red hover:bg-dirty-red/15 hover:text-dirty-yellow focus-visible:border-dirty-red focus-visible:bg-dirty-red/15 focus-visible:text-dirty-yellow min-[440px]:flex-none;
+  }
+
+  .button {
+    @apply inline-flex min-h-12 items-center justify-center border-2 px-4 py-3 font-utility text-sm font-black uppercase leading-none no-underline transition-colors;
+  }
+
+  .button-primary {
+    @apply border-dirty-red bg-dirty-red text-dirty-black hover:border-dirty-yellow hover:bg-dirty-yellow hover:text-dirty-black focus-visible:border-dirty-yellow focus-visible:bg-dirty-yellow focus-visible:text-dirty-black;
+  }
+
+  .button-secondary {
+    @apply border-dirty-yellow bg-dirty-yellow/10 text-dirty-yellow hover:border-dirty-red hover:bg-dirty-red/15 hover:text-dirty-yellow focus-visible:border-dirty-red focus-visible:bg-dirty-red/15 focus-visible:text-dirty-yellow;
+  }
+
+  .archive-card {
+    @apply border border-[rgba(183,178,168,0.24)] border-l-8 border-l-dirty-red bg-dirty-purple/70 bg-[linear-gradient(135deg,rgba(78,107,74,0.22),transparent_55%)] p-5 shadow-[0_1rem_3rem_rgba(0,0,0,0.28)] min-[760px]:p-6;
+  }
+}
