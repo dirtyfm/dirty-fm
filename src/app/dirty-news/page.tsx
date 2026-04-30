@@ -27,6 +27,10 @@ export const dynamic = "force-dynamic";
 
 const cardTones: DirtyTone[] = ["yellow", "red", "green", "blue"];
 
+function getPostDateLabel(post: Awaited<ReturnType<typeof getPublicDirtyNewsPosts>>[number]) {
+  return post.archive?.publishedAtOriginal ?? formatPostDate(post.publishedAt);
+}
+
 export default async function DirtyNewsPage({
   searchParams
 }: DirtyNewsPageProps) {
@@ -94,7 +98,15 @@ export default async function DirtyNewsPage({
           meta={[
             { label: "Category", value: featuredPost.category },
             { label: "Author", value: featuredPost.author ?? "Unlisted" },
-            { label: "Published", value: formatPostDate(featuredPost.publishedAt) }
+            { label: "Published", value: getPostDateLabel(featuredPost) },
+            ...(featuredPost.archive
+              ? [
+                  {
+                    label: "Original Comments",
+                    value: String(featuredPost.archive.commentCountOriginal)
+                  }
+                ]
+              : [])
           ]}
           notes={featuredPost.excerpt}
           title={featuredPost.title}
@@ -119,7 +131,7 @@ export default async function DirtyNewsPage({
             {posts.map((post, index) => (
               <DirtyNewsCard
                 category={post.category}
-                dateLabel={formatPostDate(post.publishedAt)}
+                dateLabel={getPostDateLabel(post)}
                 excerpt={post.excerpt}
                 href={`/dirty-news/${post.slug}`}
                 key={post.id}

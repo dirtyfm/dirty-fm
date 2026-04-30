@@ -6,6 +6,7 @@ import {
   getPublishedPosts,
   getPublishedPostsByCategory
 } from "./posts.ts";
+import { dirtyfmArchivedPosts } from "./dirtyfmArchivedPosts.ts";
 
 describe("Dirty News post helpers", () => {
   it("only exposes published posts", () => {
@@ -25,6 +26,36 @@ describe("Dirty News post helpers", () => {
       "dn-001"
     );
     assert.equal(getPostBySlug("unknown-static-burst"), null);
+  });
+
+  it("resolves every published archived slug", () => {
+    const archivedPublishedPosts = dirtyfmArchivedPosts.filter(
+      (post) => post.status === "published"
+    );
+
+    assert.ok(archivedPublishedPosts.length > 0);
+
+    for (const archivedPost of archivedPublishedPosts) {
+      const post = getPostBySlug(archivedPost.slug);
+
+      assert.ok(post, `expected archived slug to resolve: ${archivedPost.slug}`);
+      assert.equal(post.id, archivedPost.legacyId);
+      assert.equal(post.slug, archivedPost.slug);
+      assert.equal(post.status, "published");
+    }
+  });
+
+  it("preserves archived post titles exactly", () => {
+    for (const archivedPost of dirtyfmArchivedPosts) {
+      const post = getPostBySlug(archivedPost.slug);
+
+      if (archivedPost.status !== "published") {
+        assert.equal(post, null);
+        continue;
+      }
+
+      assert.equal(post?.title, archivedPost.title);
+    }
   });
 
   it("filters published posts by category", () => {
@@ -59,5 +90,46 @@ describe("Dirty News post helpers", () => {
     assert.ok(post.archive.bodyText.includes("BY: Drift & Dustin"));
     assert.ok(post.archive.bodyHtmlPreserved.includes("BY: Drift &amp; Dustin"));
     assert.ok(post.body.join("\n\n").includes("BY: Drift & Dustin"));
+  });
+
+  it("derives archived article bodies mechanically from preserved body text", () => {
+    const archivedPost = dirtyfmArchivedPosts.find(
+      (post) => post.slug === "tales-from-the-drunk-tank"
+    );
+    const post = getPostBySlug("tales-from-the-drunk-tank");
+
+    assert.ok(archivedPost);
+    assert.ok(post?.archive);
+    assert.deepEqual(
+      post.body,
+      archivedPost.bodyText
+        .split(/\n{2,}/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+    );
+  });
+
+  it("preserves known original spelling and grammar in archived bodies", () => {
+    const post = getPostBySlug("the-current-state-of-rock-music");
+
+    assert.ok(post?.archive);
+    assert.ok(
+      post.archive.bodyText.includes("Don't you think its time to take are music back?")
+    );
+    assert.ok(
+      post.body.join("\n\n").includes("Don't you think its time to take are music back?")
+    );
+  });
+
+  it("sorts published posts by published date descending", () => {
+    const posts = getPublishedPosts();
+
+    for (let index = 1; index < posts.length; index += 1) {
+      assert.ok(
+        new Date(posts[index - 1].publishedAt).getTime() >=
+          new Date(posts[index].publishedAt).getTime(),
+        `${posts[index - 1].slug} should not sort before ${posts[index].slug}`
+      );
+    }
   });
 });

@@ -27,6 +27,12 @@ export function generateStaticParams() {
 
 export const dynamic = "force-dynamic";
 
+type PublicDirtyNewsPost = Awaited<ReturnType<typeof getPublicDirtyNewsPosts>>[number];
+
+function getPostDateLabel(post: PublicDirtyNewsPost) {
+  return post.archive?.publishedAtOriginal ?? formatPostDate(post.publishedAt);
+}
+
 export async function generateMetadata({
   params
 }: DirtyNewsPostPageProps): Promise<Metadata> {
@@ -81,7 +87,7 @@ export default async function DirtyNewsPostPage({
               <dt className="text-dirty-yellow">Published</dt>
               <dd className="text-dirty-ash">
                 <time dateTime={post.publishedAt}>
-                  {formatPostDate(post.publishedAt)}
+                  {getPostDateLabel(post)}
                 </time>
               </dd>
             </div>
@@ -120,8 +126,16 @@ export default async function DirtyNewsPostPage({
             <StaticPanel label="Legacy Archive" title="Original File Preserved." tone="yellow">
               <dl className="grid gap-3 font-utility text-xs font-black uppercase">
                 <div>
+                  <dt className="text-dirty-yellow">Legacy ID</dt>
+                  <dd className="break-words text-dirty-ash">{post.archive.legacyId}</dd>
+                </div>
+                <div>
                   <dt className="text-dirty-yellow">Source File</dt>
                   <dd className="break-words text-dirty-ash">{post.archive.sourceFile}</dd>
+                </div>
+                <div>
+                  <dt className="text-dirty-yellow">Original Date</dt>
+                  <dd className="text-dirty-ash">{post.archive.publishedAtOriginal}</dd>
                 </div>
                 <div>
                   <dt className="text-dirty-yellow">Original Comments</dt>
