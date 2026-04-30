@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DirtyButton, SectionStamp, StaticPanel } from "@/components/dirty";
+import { DirtyNewsCommentForm } from "@/components/dirty-news/DirtyNewsCommentForm";
 import {
   formatPostDate,
   getPostBySlug,
   getPublishedPosts
 } from "@/data/posts";
-import { getPublicDirtyNewsPosts } from "@/lib/db/posts";
+import {
+  getPublicDirtyNewsPosts,
+  getVisibleCommentsForPost,
+  isUuid
+} from "@/lib/db/posts";
 
 type DirtyNewsPostPageProps = {
   params: Promise<{
@@ -51,6 +56,9 @@ export default async function DirtyNewsPostPage({
   if (!post) {
     notFound();
   }
+
+  const comments = await getVisibleCommentsForPost(post.id);
+  const canAcceptComments = isUuid(post.id);
 
   return (
     <article className="grid gap-8 min-[760px]:gap-10">
@@ -113,12 +121,57 @@ export default async function DirtyNewsPostPage({
         </aside>
       </div>
 
-      <StaticPanel label="Comments" title="Static From the Audience Goes Here." tone="yellow">
-        <p className="max-w-3xl text-lg leading-snug">
-          Comments are not wired up yet. When they are, the public can talk
-          back without getting a publish button for Dirty News posts.
-        </p>
-      </StaticPanel>
+      <section className="grid gap-5" id="comments">
+        <SectionStamp label="Open Mic Static" kicker="Immediate Comments" tone="yellow" />
+        <div className="grid gap-5 border border-[rgba(183,178,168,0.24)] border-l-8 border-l-dirty-yellow bg-dirty-coal/82 p-5 shadow-signal min-[760px]:p-6">
+          {canAcceptComments ? (
+            <DirtyNewsCommentForm postId={post.id} postSlug={post.slug} />
+          ) : (
+            <p className="max-w-3xl text-lg leading-snug text-dirty-gray">
+              This static seed file is read-only until it gets a database post ID.
+              Live Dirty News files take comments immediately.
+            </p>
+          )}
+
+          <div className="grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-5">
+            <div className="flex flex-col gap-2 min-[640px]:flex-row min-[640px]:items-end min-[640px]:justify-between">
+              <h2 className="font-display text-4xl font-black uppercase leading-none text-dirty-ash">
+                Audience Damage
+              </h2>
+              <p className="font-utility text-xs font-black uppercase text-dirty-yellow">
+                {comments.length} visible
+              </p>
+            </div>
+            {comments.length > 0 ? (
+              <div className="grid gap-3">
+                {comments.map((comment) => (
+                  <article
+                    className="border border-[rgba(183,178,168,0.24)] bg-dirty-black/50 p-4"
+                    key={comment.id}
+                  >
+                    <div className="flex flex-col gap-1 min-[640px]:flex-row min-[640px]:items-start min-[640px]:justify-between">
+                      <h3 className="font-display text-2xl font-black uppercase leading-none text-dirty-ash">
+                        {comment.authorName}
+                      </h3>
+                      <time
+                        className="font-utility text-xs font-bold uppercase text-dirty-yellow"
+                        dateTime={comment.createdAt}
+                      >
+                        {formatPostDate(comment.createdAt)}
+                      </time>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-dirty-gray">{comment.body}</p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="border border-dashed border-[rgba(183,178,168,0.28)] bg-dirty-black/45 p-4 text-dirty-gray">
+                No public comments on this file yet. Be the first person to yell into the vent.
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
     </article>
   );
 }

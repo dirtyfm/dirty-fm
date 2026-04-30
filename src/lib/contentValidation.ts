@@ -180,6 +180,8 @@ export function validatePostSubmission(
 
 export function validateComment(input: CommentInput): ValidationResult<CommentInput> {
   const errors: Record<string, string> = {};
+  const trimmedAuthorName = input.authorName.trim();
+  const trimmedBody = input.body.trim();
   const data = {
     authorEmail: input.authorEmail ? cleanText(input.authorEmail, 254).toLowerCase() : undefined,
     authorName: cleanText(input.authorName, 120),
@@ -193,14 +195,18 @@ export function validateComment(input: CommentInput): ValidationResult<CommentIn
 
   if (!data.authorName) {
     errors.authorName = "Name or alias is required.";
+  } else if (trimmedAuthorName.length > 120) {
+    errors.authorName = "Name or alias must stay under 120 characters.";
   }
 
   if (data.authorEmail && !emailPattern.test(data.authorEmail)) {
     errors.authorEmail = "Use a real email address or leave it empty.";
   }
 
-  if (data.body.length < 8) {
+  if (trimmedBody.length < 8) {
     errors.body = "Comment needs at least 8 characters.";
+  } else if (trimmedBody.length > 4000) {
+    errors.body = "Comment must stay under 4000 characters.";
   }
 
   if (Object.keys(errors).length > 0) {

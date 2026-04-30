@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createContactSubmission, createPostSubmission } from "./submissions.ts";
+import { createComment, createContactSubmission, createPostSubmission } from "./submissions.ts";
 
 function createInsertSpy() {
   const calls = [];
@@ -67,5 +67,21 @@ describe("public submission inserts", () => {
     assert.equal(spy.calls.length, 1);
     assert.equal(spy.calls[0].table, "post_submissions");
     assert.equal(spy.calls[0].payload.status, "pending");
+  });
+
+  it("creates comments as live public comments without accepting hidden flags", async () => {
+    const spy = createInsertSpy();
+    const result = await createComment(spy.client, {
+      authorEmail: "",
+      authorName: "Caller",
+      body: "This comment goes live right away.",
+      is_hidden: true,
+      postId: "123e4567-e89b-12d3-a456-426614174000"
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(spy.calls[0].table, "comments");
+    assert.equal(spy.calls[0].payload.author_email, null);
+    assert.equal("is_hidden" in spy.calls[0].payload, false);
   });
 });

@@ -1,5 +1,6 @@
 import "server-only";
 import { dirtyNewsPosts, type DirtyNewsPost } from "@/data/posts";
+import { mapVisiblePublicComments, type PublicDirtyNewsComment } from "@/lib/db/commentMapping";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 
 type DbPost = {
@@ -15,9 +16,23 @@ type DbPost = {
   title: string;
 };
 
+type DbComment = {
+  id: string;
+  author_name: string;
+  body: string;
+  created_at: string;
+  is_hidden?: boolean;
+};
+
 function canUseSupabasePublicReads() {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
+
+export function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
   );
 }
 
@@ -56,6 +71,28 @@ export async function getPublicDirtyNewsPosts() {
   }
 
   return (data as DbPost[]).map(mapDbPost);
+}
+
+export async function getVisibleCommentsForPost(
+  postId: string
+): Promise<PublicDirtyNewsComment[]> {
+  if (!canUseSupabasePublicReads() || !isUuid(postId)) {
+    return [];
+  }
+
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("comments")
+    .select("id, author_name, body, created_at")
+    .eq("post_id", postId)
+    .eq("is_hidden", false)
+    .order("created_at", { ascending: true });
+
+  if (error || !data) {
+    return [];
+  }
+
+  return mapVisiblePublicComments(data as DbComment[]);
 }
 
 export function getDirtyNewsCategoriesFromPosts(posts: DirtyNewsPost[]) {

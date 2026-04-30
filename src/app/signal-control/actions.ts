@@ -198,3 +198,82 @@ export async function deletePostSubmission(formData: FormData) {
 
   revalidatePath("/signal-control");
 }
+
+async function getCommentPostSlug(commentId: string) {
+  const { supabase } = await getAdminContext();
+  const { data, error } = await supabase
+    .from("comments")
+    .select("post_id")
+    .eq("id", commentId)
+    .single();
+
+  if (error) {
+    throw new Error(`Comment lookup failed: ${error.message}`);
+  }
+
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("slug")
+    .eq("id", data.post_id)
+    .single();
+
+  if (postError) {
+    throw new Error(`Comment post lookup failed: ${postError.message}`);
+  }
+
+  return { slug: post.slug, supabase };
+}
+
+export async function hideComment(formData: FormData) {
+  const { profile } = await getAdminContext();
+  const id = getRequiredString(formData, "id");
+  const { slug, supabase } = await getCommentPostSlug(id);
+  const { error } = await supabase
+    .from("comments")
+    .update({
+      hidden_at: new Date().toISOString(),
+      hidden_by: profile.user_id,
+      is_hidden: true
+    })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Comment hide failed: ${error.message}`);
+  }
+
+  revalidatePath("/signal-control");
+  revalidatePath(`/dirty-news/${slug}`);
+}
+
+export async function restoreComment(formData: FormData) {
+  const id = getRequiredString(formData, "id");
+  const { slug, supabase } = await getCommentPostSlug(id);
+  const { error } = await supabase
+    .from("comments")
+    .update({
+      hidden_at: null,
+      hidden_by: null,
+      is_hidden: false
+    })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Comment restore failed: ${error.message}`);
+  }
+
+  revalidatePath("/signal-control");
+  revalidatePath(`/dirty-news/${slug}`);
+}
+
+export async function deleteComment(formData: FormData) {
+  const id = getRequiredString(formData, "id");
+  const { slug, supabase } = await getCommentPostSlug(id);
+  const { error } = await supabase.from("comments").delete().eq("id", id);
+
+  if (error) {
+    throw new Error(`Comment delete failed: ${error.message}`);
+  }
+
+  revalidatePath("/signal-control");
+  revalidatePath(`/dirty-news/${slug}`);
+}

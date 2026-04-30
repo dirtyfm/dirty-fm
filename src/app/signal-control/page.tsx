@@ -21,8 +21,11 @@ import {
 } from "@/lib/submissionWorkflows";
 import {
   deleteContactSubmission,
+  deleteComment,
   deletePostSubmission,
+  hideComment,
   publishPostSubmission,
+  restoreComment,
   updateContactSubmission,
   updatePostSubmission
 } from "./actions";
@@ -353,6 +356,29 @@ function CommentList({ comments }: { comments: AdminDashboardComment[] }) {
           </div>
           <p className="mt-2 text-sm text-dirty-gray">On: {comment.postTitle}</p>
           <p className="mt-3 text-dirty-ash">{excerpt(comment.body)}</p>
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-[rgba(183,178,168,0.24)] pt-4">
+            {comment.is_hidden ? (
+              <form action={restoreComment}>
+                <input name="id" type="hidden" value={comment.id} />
+                <button className="button button-secondary" type="submit">
+                  Restore Comment
+                </button>
+              </form>
+            ) : (
+              <form action={hideComment}>
+                <input name="id" type="hidden" value={comment.id} />
+                <button className="button button-secondary" type="submit">
+                  Hide Comment
+                </button>
+              </form>
+            )}
+            <form action={deleteComment}>
+              <input name="id" type="hidden" value={comment.id} />
+              <button className="font-utility text-xs font-black uppercase text-dirty-red" type="submit">
+                Delete Comment
+              </button>
+            </form>
+          </div>
         </article>
       ))}
     </div>

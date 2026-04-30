@@ -68,6 +68,28 @@ describe("server-side content validation", () => {
     assert.equal("isHidden" in result.data, false);
   });
 
+  it("rejects comments that blow past the public length limit", () => {
+    const result = validateComment({
+      authorName: "Wire Caller",
+      body: "x".repeat(4001),
+      postId: "123e4567-e89b-12d3-a456-426614174000"
+    });
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.body, /4000 characters/);
+  });
+
+  it("preserves script-looking comment text as plain submitted text", () => {
+    const result = validateComment({
+      authorName: "Wire Caller",
+      body: "<script>alert('static')</script>",
+      postId: "123e4567-e89b-12d3-a456-426614174000"
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.data.body, "<script>alert('static')</script>");
+  });
+
   it("keeps post submission categories aligned with DirtyFM buckets", () => {
     assert.deepEqual(postSubmissionCategories, [
       "Dirty News",
