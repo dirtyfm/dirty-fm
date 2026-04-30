@@ -121,7 +121,7 @@ export function DirtyNewsSubmissionForm() {
           </div>
         ) : null}
 
-        <div className="grid gap-4 min-[760px]:grid-cols-2">
+        <div className="grid gap-4 border-b border-[rgba(183,178,168,0.18)] pb-5 min-[760px]:grid-cols-2">
           <label className="grid gap-2">
             <span className="font-utility text-xs font-black uppercase text-dirty-yellow">
               Name / Alias
@@ -176,7 +176,7 @@ export function DirtyNewsSubmissionForm() {
             {postSubmissionCategories.map((category) => (
               <label
                 className={cx(
-                  "flex min-h-14 cursor-pointer items-center border px-3 py-2 font-utility text-xs font-black uppercase transition-colors",
+                  "flex min-h-14 cursor-pointer items-center border px-3 py-2 font-utility text-xs font-black uppercase shadow-[0.18rem_0.18rem_0_rgba(0,0,0,0.3)] transition-colors",
                   values.category === category
                     ? "border-dirty-red bg-dirty-red/20 text-dirty-ash"
                     : "border-[rgba(183,178,168,0.24)] bg-dirty-purple/45 text-dirty-gray hover:border-dirty-yellow"

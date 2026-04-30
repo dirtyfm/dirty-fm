@@ -79,7 +79,7 @@ export function SignalControlLogin() {
         </label>
         <input
           autoComplete="email"
-          className="min-h-12 border border-[rgba(183,178,168,0.28)] bg-dirty-black px-3 text-dirty-ash"
+          className="min-h-12 border border-[rgba(183,178,168,0.28)] bg-dirty-black px-3 text-dirty-ash outline-none focus:border-dirty-yellow"
           id="email"
           name="email"
           onChange={(event) => setEmail(event.target.value)}
@@ -97,7 +97,7 @@ export function SignalControlLogin() {
         </label>
         <input
           autoComplete="current-password"
-          className="min-h-12 border border-[rgba(183,178,168,0.28)] bg-dirty-black px-3 text-dirty-ash"
+          className="min-h-12 border border-[rgba(183,178,168,0.28)] bg-dirty-black px-3 text-dirty-ash outline-none focus:border-dirty-yellow"
           id="password"
           name="password"
           onChange={(event) => setPassword(event.target.value)}
@@ -111,7 +111,7 @@ export function SignalControlLogin() {
           {error}
         </p>
       ) : null}
-      <button className="button button-primary w-full" disabled={isSubmitting} type="submit">
+      <button className="button button-primary w-full disabled:cursor-not-allowed disabled:opacity-55" disabled={isSubmitting} type="submit">
         {isSubmitting ? "Checking Clearance" : "Enter Signal Control"}
       </button>
     </form>

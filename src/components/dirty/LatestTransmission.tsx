@@ -18,7 +18,7 @@ export function LatestTransmission({
   href,
   eyebrow = "Latest Transmission",
   primaryActionLabel = "Watch the Damage",
-  secondaryHref = "/tv",
+  secondaryHref = "/dirty-tv",
   secondaryActionLabel = "Enter the Archive",
   meta = ["File Type: Video", "Status: Unapproved", "Host: Drift"]
 }: LatestTransmissionProps) {
@@ -43,7 +43,7 @@ export function LatestTransmission({
         <ul className="grid gap-2 font-utility text-xs font-black uppercase text-dirty-yellow min-[560px]:grid-cols-3">
           {meta.map((item) => (
             <li
-              className="border border-[rgba(183,178,168,0.24)] bg-dirty-black/35 px-3 py-2"
+              className="file-tape"
               key={item}
             >
               {item}

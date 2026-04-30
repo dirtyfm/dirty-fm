@@ -13,14 +13,17 @@ export function SiteFooter() {
         className="flex flex-wrap justify-start gap-2 min-[760px]:justify-end"
         aria-label="Footer navigation"
       >
-        <Link className="nav-link" href="/news">
+        <Link className="nav-link" href="/dirty-news">
           Dirty News
         </Link>
-        <Link className="nav-link" href="/tv">
-          Dirty TV
+        <Link className="nav-link" href="/dirty-tv">
+          Video Trash
         </Link>
         <Link className="nav-link" href="/contact">
           Send a Signal
+        </Link>
+        <Link className="nav-link opacity-75" href="/signal-control">
+          Signal Control
         </Link>
       </div>
     </footer>

@@ -62,7 +62,7 @@ export default async function DirtyNewsPostPage({
 
   return (
     <article className="grid gap-8 min-[760px]:gap-10">
-      <header className="relative overflow-hidden border border-[rgba(183,178,168,0.24)] border-l-8 border-l-dirty-red bg-dirty-purple/70 p-5 shadow-signal min-[760px]:p-8">
+      <header className="broadcast-panel border-l-8 border-l-dirty-red p-5 min-[760px]:p-8">
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(214,184,74,0.16),transparent_12rem),repeating-linear-gradient(0deg,rgba(183,178,168,0.07)_0,rgba(183,178,168,0.07)_1px,transparent_1px,transparent_7px)] opacity-60"
           aria-hidden="true"
@@ -98,9 +98,10 @@ export default async function DirtyNewsPostPage({
 
       <div className="grid gap-8 min-[920px]:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="grid gap-5 border border-[rgba(183,178,168,0.24)] bg-dirty-coal/82 p-5 shadow-signal min-[760px]:p-8">
+          <p className="file-tape w-fit">Article file / plain text dispatch / no raw HTML</p>
           {post.body.map((paragraph) => (
             <p
-              className="text-lg leading-relaxed text-dirty-gray min-[760px]:text-xl"
+              className="max-w-[68ch] text-lg leading-relaxed text-dirty-gray min-[760px]:text-xl"
               key={paragraph}
             >
               {paragraph}
@@ -146,7 +147,7 @@ export default async function DirtyNewsPostPage({
               <div className="grid gap-3">
                 {comments.map((comment) => (
                   <article
-                    className="border border-[rgba(183,178,168,0.24)] bg-dirty-black/50 p-4"
+                    className="border border-[rgba(183,178,168,0.24)] border-l-4 border-l-dirty-yellow bg-dirty-black/50 p-4 transition-colors hover:border-l-dirty-red"
                     key={comment.id}
                   >
                     <div className="flex flex-col gap-1 min-[640px]:flex-row min-[640px]:items-start min-[640px]:justify-between">
@@ -165,9 +166,15 @@ export default async function DirtyNewsPostPage({
                 ))}
               </div>
             ) : (
-              <p className="border border-dashed border-[rgba(183,178,168,0.28)] bg-dirty-black/45 p-4 text-dirty-gray">
-                No public comments on this file yet. Be the first person to yell into the vent.
-              </p>
+              <div className="border border-dashed border-[rgba(183,178,168,0.28)] bg-dirty-black/45 p-4">
+                <p className="font-display text-3xl font-black uppercase leading-none text-dirty-ash">
+                  The vent is quiet.
+                </p>
+                <p className="mt-2 text-dirty-gray">
+                  No public comments on this file yet. Be the first person to
+                  yell into it.
+                </p>
+              </div>
             )}
           </div>
         </div>

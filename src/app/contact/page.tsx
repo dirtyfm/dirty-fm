@@ -44,7 +44,7 @@ export default function ContactPage() {
         label="Send a Signal"
       />
 
-      <section className="relative overflow-hidden border border-[rgba(183,178,168,0.24)] bg-dirty-black/55 p-5 shadow-signal min-[760px]:p-8">
+      <section className="broadcast-panel p-5 min-[760px]:p-8">
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_15%,rgba(214,184,74,0.16),transparent_13rem),repeating-linear-gradient(105deg,rgba(209,42,31,0.1)_0,rgba(209,42,31,0.1)_2px,transparent_2px,transparent_18px)] opacity-70"
           aria-hidden="true"
@@ -81,8 +81,9 @@ export default function ContactPage() {
           </p>
         </div>
         <div className="grid gap-4 min-[760px]:grid-cols-2 min-[1040px]:grid-cols-4">
-          {signalTypes.map((type) => (
+          {signalTypes.map((type, index) => (
             <ArchiveCard
+              className={index % 2 === 1 ? "min-[1040px]:translate-y-3" : undefined}
               key={type.title}
               label="Signal Type"
               notes={type.notes}
@@ -112,7 +113,7 @@ export default function ContactPage() {
               later, server-side validation and moderation tools come with it.
             </p>
           </div>
-          <div className="border border-dirty-red bg-dirty-red/15 p-4 font-utility text-sm font-bold uppercase text-dirty-yellow">
+          <div className="file-tape border-dirty-red bg-dirty-red/15 text-dirty-yellow">
             Can we read it on air? Say yes or no. Dirty does not mean unclear.
           </div>
         </div>

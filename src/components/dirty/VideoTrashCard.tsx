@@ -19,7 +19,7 @@ export function VideoTrashCard({
   thumbnailUrl
 }: VideoTrashCardProps) {
   return (
-    <article className="group overflow-hidden border border-[rgba(183,178,168,0.24)] bg-dirty-purple/70 shadow-signal">
+    <article className="group overflow-hidden border border-[rgba(183,178,168,0.24)] bg-dirty-purple/70 shadow-signal transition-colors hover:border-dirty-blue focus-within:border-dirty-yellow">
       <Link className="block no-underline" href={href} aria-label={`Watch ${title}`}>
         <div
           className={cx(
@@ -29,14 +29,18 @@ export function VideoTrashCard({
           )}
           style={thumbnailUrl ? { backgroundImage: `url(${thumbnailUrl})` } : undefined}
         >
-          <div className="absolute left-3 top-3 bg-dirty-red px-2 py-1 font-utility text-xs font-black uppercase leading-none text-dirty-black">
+          <div className="absolute left-3 top-3 border border-dirty-red bg-dirty-red px-2 py-1 font-utility text-xs font-black uppercase leading-none text-dirty-black shadow-[0.18rem_0.18rem_0_rgba(0,0,0,0.4)]">
             {status}
           </div>
+          <div
+            className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(183,178,168,0.12)_0,rgba(183,178,168,0.12)_1px,transparent_1px,transparent_6px)] opacity-20"
+            aria-hidden="true"
+          />
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-dirty-black via-dirty-black/70 to-transparent p-3">
             <span className="font-utility text-xs font-black uppercase text-dirty-yellow">
               {runtime}
             </span>
-            <span className="font-display text-3xl font-black uppercase leading-none text-dirty-red">
+            <span className="font-display text-3xl font-black uppercase leading-none text-dirty-red transition-colors group-hover:text-dirty-yellow">
               Play
             </span>
           </div>

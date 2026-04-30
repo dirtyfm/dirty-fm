@@ -143,7 +143,7 @@ export function SendSignalForm() {
           </div>
         ) : null}
 
-        <div className="grid gap-4 min-[760px]:grid-cols-2">
+        <div className="grid gap-4 border-b border-[rgba(183,178,168,0.18)] pb-5 min-[760px]:grid-cols-2">
           <label className="grid gap-2">
             <span className="font-utility text-xs font-black uppercase text-dirty-yellow">
               Name / Alias
@@ -175,7 +175,7 @@ export function SendSignalForm() {
           </label>
         </div>
 
-        <div className="grid gap-4 min-[760px]:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="grid gap-4 border-b border-[rgba(183,178,168,0.18)] pb-5 min-[760px]:grid-cols-[minmax(0,1fr)_18rem]">
           <label className="grid gap-2">
             <span className="font-utility text-xs font-black uppercase text-dirty-yellow">
               Subject
@@ -230,7 +230,7 @@ export function SendSignalForm() {
             {submissionTypes.map((type) => (
               <label
                 className={cx(
-                  "grid min-h-32 cursor-pointer content-start gap-2 border p-3 transition-colors",
+                  "grid min-h-32 cursor-pointer content-start gap-2 border p-3 shadow-[0.2rem_0.2rem_0_rgba(0,0,0,0.3)] transition-colors",
                   values.submissionType === type
                     ? "border-dirty-red bg-dirty-red/20 text-dirty-ash"
                     : "border-[rgba(183,178,168,0.24)] bg-dirty-purple/45 text-dirty-gray hover:border-dirty-yellow hover:bg-dirty-yellow/10"
@@ -260,7 +260,7 @@ export function SendSignalForm() {
           ) : null}
         </fieldset>
 
-        <label className="grid gap-2">
+        <label className="grid gap-2 border-t border-[rgba(183,178,168,0.18)] pt-5">
           <span className="font-utility text-xs font-black uppercase text-dirty-yellow">
             Message
           </span>

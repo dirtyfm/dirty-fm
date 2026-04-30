@@ -1,4 +1,5 @@
 import { ArchiveCard, type ArchiveMeta } from "./ArchiveCard";
+import type { DirtyTone } from "./shared";
 
 export type DirtyNewsCardProps = {
   title: string;
@@ -7,6 +8,7 @@ export type DirtyNewsCardProps = {
   category?: string;
   dateLabel?: string;
   status?: string;
+  tone?: DirtyTone;
 };
 
 export function DirtyNewsCard({
@@ -15,7 +17,8 @@ export function DirtyNewsCard({
   href,
   category = "Dirty News",
   dateLabel = "Undated",
-  status = "Unapproved"
+  status = "Unapproved",
+  tone = "yellow"
 }: DirtyNewsCardProps) {
   const meta: ArchiveMeta[] = [
     { label: "Category", value: category },
@@ -31,7 +34,7 @@ export function DirtyNewsCard({
       meta={meta}
       notes={excerpt}
       title={title}
-      tone="yellow"
+      tone={tone}
     />
   );
 }

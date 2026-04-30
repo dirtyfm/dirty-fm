@@ -16,7 +16,7 @@ export function TickerBar({
   return (
     <div
       className={cx(
-        "flex overflow-hidden border-y border-dirty-red bg-dirty-black text-dirty-yellow",
+        "flex overflow-hidden border-y border-dirty-red bg-dirty-black text-dirty-yellow shadow-[0_0.4rem_0_rgba(0,0,0,0.28)]",
         className
       )}
       aria-label={label}

@@ -57,8 +57,13 @@ const adminFieldBase =
 
 function EmptyWire({ label }: { label: string }) {
   return (
-    <div className="border border-dashed border-[rgba(183,178,168,0.28)] bg-dirty-black/45 p-4 font-utility text-xs font-bold uppercase text-dirty-gray">
-      No {label} in the stack right now.
+    <div className="border border-dashed border-[rgba(183,178,168,0.28)] bg-dirty-black/45 p-4">
+      <p className="font-display text-2xl font-black uppercase leading-none text-dirty-ash">
+        Stack Clear.
+      </p>
+      <p className="mt-2 font-utility text-xs font-bold uppercase text-dirty-gray">
+        No {label} in the stack right now.
+      </p>
     </div>
   );
 }
@@ -75,23 +80,25 @@ function LoginPanel({ message }: { message?: string }) {
         ]}
         label="Signal Control"
       />
-      <section className="grid gap-6 border border-[rgba(183,178,168,0.24)] bg-dirty-black/55 p-5 shadow-signal min-[860px]:grid-cols-[minmax(0,1fr)_24rem] min-[860px]:items-end min-[860px]:p-8">
-        <div className="grid gap-4">
-          <p className="eyebrow">Protected Console / No Public Wire</p>
-          <h1 className="max-w-[10ch] font-display text-[clamp(3.2rem,12vw,7.5rem)] font-black uppercase leading-[0.9] text-dirty-ash">
-            Signal Control
-          </h1>
-          <p className="max-w-2xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
-            Operator room for incoming messages, Dirty News submissions, live
-            files, and open mic comments. No clearance, no archive guts.
-          </p>
-          {message ? (
-            <p className="max-w-2xl border-l-8 border-dirty-red bg-dirty-red/15 p-4 font-utility text-xs font-bold uppercase text-dirty-yellow">
-              {message}
+      <section className="broadcast-panel p-5 min-[860px]:p-8">
+        <div className="relative grid gap-6 min-[860px]:grid-cols-[minmax(0,1fr)_24rem] min-[860px]:items-end">
+          <div className="grid gap-4">
+            <p className="eyebrow">Protected Console / No Public Wire</p>
+            <h1 className="max-w-[10ch] font-display text-[clamp(3.2rem,12vw,7.5rem)] font-black uppercase leading-[0.9] text-dirty-ash">
+              Signal Control
+            </h1>
+            <p className="max-w-2xl text-lg leading-snug text-dirty-gray min-[760px]:text-2xl">
+              Operator room for incoming messages, Dirty News submissions, live
+              files, and open mic comments. No clearance, no archive guts.
             </p>
-          ) : null}
+            {message ? (
+              <p className="max-w-2xl border-l-8 border-dirty-red bg-dirty-red/15 p-4 font-utility text-xs font-bold uppercase text-dirty-yellow">
+                {message}
+              </p>
+            ) : null}
+          </div>
+          <SignalControlLogin />
         </div>
-        <SignalControlLogin />
       </section>
     </div>
   );
@@ -99,7 +106,7 @@ function LoginPanel({ message }: { message?: string }) {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <article className="border border-[rgba(183,178,168,0.24)] bg-dirty-coal/80 p-5">
+    <article className="border border-[rgba(183,178,168,0.24)] border-l-4 border-l-dirty-yellow bg-dirty-coal/80 p-5">
       <p className="font-utility text-xs font-black uppercase text-dirty-yellow">{label}</p>
       <p className="mt-3 font-display text-5xl font-black uppercase leading-none text-dirty-red">
         {value}
@@ -159,14 +166,14 @@ function ContactList({ contacts }: { contacts: AdminDashboardContact[] }) {
                   rows={2}
                 />
               </label>
-              <button className="button button-secondary" type="submit">
-                Save Signal
-              </button>
+            <button className="button button-secondary" type="submit">
+              Save Signal
+            </button>
             </div>
           </form>
           <form action={deleteContactSubmission} className="mt-3">
             <input name="id" type="hidden" value={contact.id} />
-            <button className="font-utility text-xs font-black uppercase text-dirty-red" type="submit">
+            <button className="danger-link" type="submit">
               Delete if Needed
             </button>
           </form>
@@ -255,7 +262,7 @@ function SubmissionList({ submissions }: { submissions: AdminDashboardPostSubmis
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="button button-secondary" type="submit">
+            <button className="button button-secondary" type="submit">
                 Save Edit
               </button>
             </div>
@@ -294,7 +301,7 @@ function SubmissionList({ submissions }: { submissions: AdminDashboardPostSubmis
           </form>
           <form action={deletePostSubmission} className="mt-3">
             <input name="id" type="hidden" value={submission.id} />
-            <button className="font-utility text-xs font-black uppercase text-dirty-red" type="submit">
+            <button className="danger-link" type="submit">
               Delete if Needed
             </button>
           </form>
@@ -374,7 +381,7 @@ function CommentList({ comments }: { comments: AdminDashboardComment[] }) {
             )}
             <form action={deleteComment}>
               <input name="id" type="hidden" value={comment.id} />
-              <button className="font-utility text-xs font-black uppercase text-dirty-red" type="submit">
+              <button className="danger-link" type="submit">
                 Delete Comment
               </button>
             </form>
@@ -440,7 +447,8 @@ export default async function SignalControlPage() {
         label="Signal Control"
       />
 
-      <section className="grid gap-6 border border-[rgba(183,178,168,0.24)] bg-dirty-black/55 p-5 shadow-signal min-[860px]:grid-cols-[minmax(0,1fr)_auto] min-[860px]:items-end min-[860px]:p-8">
+      <section className="broadcast-panel p-5 min-[860px]:p-8">
+        <div className="relative grid gap-6 min-[860px]:grid-cols-[minmax(0,1fr)_auto] min-[860px]:items-end">
         <div className="grid gap-4">
           <p className="eyebrow">Overview / Operator Console</p>
           <h1 className="max-w-[11ch] font-display text-[clamp(3.2rem,12vw,7.5rem)] font-black uppercase leading-[0.9] text-dirty-ash">
@@ -453,7 +461,19 @@ export default async function SignalControlPage() {
           </p>
         </div>
         <SignalControlLogout />
+        </div>
       </section>
+
+      <nav
+        className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 min-[760px]:mx-0 min-[760px]:flex-wrap min-[760px]:overflow-visible min-[760px]:px-0 min-[760px]:pb-0"
+        aria-label="Signal Control sections"
+      >
+        <a className="nav-link" href="#overview">Overview</a>
+        <a className="nav-link" href="#incoming-signals">Signals</a>
+        <a className="nav-link" href="#pending-dirty-news">Pending News</a>
+        <a className="nav-link" href="#live-files">Live Files</a>
+        <a className="nav-link" href="#open-mic-comments">Comments</a>
+      </nav>
 
       <section className="grid gap-4" id="overview">
         <SectionStamp label="Overview" kicker="Dashboard Counts" tone="yellow" />

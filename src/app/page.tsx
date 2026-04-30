@@ -89,12 +89,12 @@ export default function Home() {
     <div className="grid gap-10 min-[760px]:gap-14">
       <TickerBar items={dirtyFeed} label="Dirty Feed" />
 
-      <section className="relative overflow-hidden border border-[rgba(183,178,168,0.24)] bg-dirty-black/45 p-5 shadow-signal min-[760px]:p-8">
+      <section className="broadcast-panel p-5 min-[760px]:p-8">
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(209,42,31,0.2),transparent_12rem),repeating-linear-gradient(100deg,rgba(214,184,74,0.08)_0,rgba(214,184,74,0.08)_2px,transparent_2px,transparent_18px)] opacity-70"
           aria-hidden="true"
         />
-        <div className="relative grid items-end gap-8 min-[900px]:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="relative grid items-end gap-8 min-[900px]:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="grid gap-6">
             <p className="eyebrow">Hero / Dirty Signal</p>
             <h1 className="max-w-[10ch] font-display text-[clamp(3.3rem,13vw,8.8rem)] font-black uppercase leading-[0.9] text-dirty-ash">
@@ -111,16 +111,17 @@ export default function Home() {
                 Read Dirty News
               </DirtyButton>
               <DirtyButton href="#drift-files" variant="ghost">
-                Open Drift Files
+                Open the Dossier
               </DirtyButton>
             </div>
           </div>
 
-          <aside className="grid gap-4 border-l-8 border-dirty-red bg-dirty-purple/80 p-5">
+          <aside className="grid gap-4 border-l-8 border-dirty-red bg-dirty-purple/80 p-5 shadow-[0.45rem_0.45rem_0_rgba(0,0,0,0.36)]">
             <SectionStamp label="On Air" kicker="No Permission" tone="red" />
             <p className="font-display text-[clamp(2rem,7vw,3.6rem)] font-black uppercase leading-none text-dirty-ash">
               Pirate radio for the unmanageable.
             </p>
+            <p className="file-tape">Frequency: busted mic / basement wire / no PR handler</p>
             <dl className="grid gap-2 font-utility text-xs font-black uppercase">
               <div className="flex justify-between gap-3 border-t border-[rgba(183,178,168,0.24)] pt-2">
                 <dt className="text-dirty-yellow">Host</dt>
@@ -140,7 +141,7 @@ export default function Home() {
       </section>
 
       <LatestTransmission
-        title="Latest Transmission: Drift Finds the Live Wire"
+        title="Latest Transmission: The Mic Is Still Hot"
         description="The newest hit from the dirty signal: rough talk, damaged logic, useful static, and a mic that should probably be supervised by nobody."
         href="/dirty-tv"
         secondaryHref="/dirty-news"
@@ -171,7 +172,7 @@ export default function Home() {
               it into a polite little content pellet.
             </p>
           </div>
-          <div className="border border-dirty-yellow bg-dirty-black/40 p-4 font-utility text-sm font-bold uppercase text-dirty-yellow">
+          <div className="file-tape">
             No polish. No permission. No corporate-safe opinions. Just Drift,
             the open mic, and whatever the archive coughs up next.
           </div>
@@ -193,8 +194,12 @@ export default function Home() {
           </DirtyButton>
         </div>
         <div className="grid gap-4 min-[860px]:grid-cols-3">
-          {newsPosts.map((post) => (
-            <DirtyNewsCard key={post.title} {...post} />
+          {newsPosts.map((post, index) => (
+            <DirtyNewsCard
+              key={post.title}
+              {...post}
+              tone={index === 0 ? "red" : index === 1 ? "yellow" : "green"}
+            />
           ))}
         </div>
       </section>

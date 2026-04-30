@@ -44,6 +44,7 @@ export function DirtyButton(props: DirtyButtonProps) {
   const classes = cx(
     "inline-flex min-h-12 items-center justify-center border-2 px-4 py-3 font-utility text-sm font-black uppercase leading-none no-underline transition-colors",
     "shadow-[0.25rem_0.25rem_0_rgba(0,0,0,0.38)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
+    disabled && "cursor-not-allowed opacity-55 active:translate-x-0 active:translate-y-0",
     fullWidth && "w-full",
     variantClasses[variant],
     className
