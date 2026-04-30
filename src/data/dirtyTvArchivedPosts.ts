@@ -28,6 +28,23 @@ export type ArchivedDirtyTvHomePreviewItem = {
 // legacy URLs, providers, embed source paths, and original comment counts.
 export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
   {
+    title: "Drunk In Druglesville",
+    slug: "drunk-in-druglesville",
+    sourceUrl: "https://www.youtube.com/watch?v=0iX43v-lIGg",
+    postedAtOriginal: "6/27/2017",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal: "Drift, Rhino, Ak47 bring it down",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "0iX43v-lIGg",
+        url: "https://www.youtube.com/watch?v=0iX43v-lIGg"
+      }
+    ],
+    comments: []
+  },
+  {
     title: "Victims of the war on drugs Part 1",
     slug: "victims-of-the-war-on-drugs-part-1",
     sourceUrl: "http://www.dirtyfm.com/dirtytv/victims-of-the-war-on-drugs-part-1",
@@ -46,6 +63,24 @@ export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
     comments: []
   },
   {
+    title: "Victims Of The War On Drugs Part 1",
+    slug: "victims-of-the-war-on-drugs-part-1-2",
+    sourceUrl: "https://www.youtube.com/watch?v=NwFAh1FLh9c",
+    postedAtOriginal: "4/18/2017",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal:
+      "An in-depth interview with Roxy Davis a victim of the war on drugs. Here we touch on topics such as rehab, jail, personal issues, policy and more. Check back for Part 3.",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "NwFAh1FLh9c",
+        url: "https://www.youtube.com/watch?v=NwFAh1FLh9c"
+      }
+    ],
+    comments: []
+  },
+  {
     title: "Morning Show Drug Legalization",
     slug: "morning-show-drug-legalization",
     sourceUrl: "http://www.dirtyfm.com/dirtytv/morning-show-drug-legalization",
@@ -59,6 +94,60 @@ export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
         videoId: "171365175",
         url: "https://vimeo.com/171365175",
         embedSrcOriginal: "./DirtyTV_files/171365175.html"
+      }
+    ],
+    comments: []
+  },
+  {
+    title: "11016 Morning Show",
+    slug: "11016-morning-show",
+    sourceUrl: "https://www.youtube.com/watch?v=LQ2eBjYI93o",
+    postedAtOriginal: "1/22/2016",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal:
+      "Jay & Dirty start the show without drift. Hear about their wild adventure! Drift shows up at the end with Dirty to talk about nothing! Keep tuning in and Subscribe!",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "LQ2eBjYI93o",
+        url: "https://www.youtube.com/watch?v=LQ2eBjYI93o"
+      }
+    ],
+    comments: []
+  },
+  {
+    title: "The Morning Show 12/4/15",
+    slug: "the-morning-show-12-4-15",
+    sourceUrl: "https://www.youtube.com/watch?v=EyV6hZiMUco",
+    postedAtOriginal: "12/9/2015",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal:
+      "Today we talk about childhood memories. Dirtys show up and says almost nothing. Drift is his normal crazy",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "EyV6hZiMUco",
+        url: "https://www.youtube.com/watch?v=EyV6hZiMUco"
+      }
+    ],
+    comments: []
+  },
+  {
+    title: "The morning show 112715",
+    slug: "the-morning-show-112715",
+    sourceUrl: "https://www.youtube.com/watch?v=45P-7mNiWwo",
+    postedAtOriginal: "12/4/2015",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal:
+      "Politics & Loud mouth bullshit. We are always DIRTY! Never Duplicated! (because we are crazy). Listen if you dare. Drift and Mag are recording the most ridiculous morning show to date. S_U_B_S_C_R_I_B_E. Like DirtyFM on Facebook. Visit the Webpage www.DirtyFM.com",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "45P-7mNiWwo",
+        url: "https://www.youtube.com/watch?v=45P-7mNiWwo"
       }
     ],
     comments: []
@@ -104,6 +193,60 @@ export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
         videoId: "PXUFGaZ8T2U",
         url: "https://www.youtube.com/watch?v=PXUFGaZ8T2U",
         embedSrcOriginal: "./DirtyTV_files/PXUFGaZ8T2U.html"
+      }
+    ],
+    comments: []
+  },
+  {
+    title: "The Best Of The Best (Sneak Peek)",
+    slug: "the-best-of-the-best-sneak-peek",
+    sourceUrl: "https://www.youtube.com/watch?v=0vkXGJ7zGgA",
+    postedAtOriginal: "12/16/2013",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal:
+      "When all hope is lost and our nation has no where else to go. Our last chance of survival is only one man...",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "0vkXGJ7zGgA",
+        url: "https://www.youtube.com/watch?v=0vkXGJ7zGgA"
+      }
+    ],
+    comments: []
+  },
+  {
+    title: "Teddy Burrr",
+    slug: "teddy-burrr",
+    sourceUrl: "https://www.youtube.com/watch?v=oR4FROF7j5Y",
+    postedAtOriginal: "12/16/2013",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal:
+      "Keeping up with this shit is annoying, but shit is about to go down.\nSo ya'll hold on too ya dingdongs and peanut butter.",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "oR4FROF7j5Y",
+        url: "https://www.youtube.com/watch?v=oR4FROF7j5Y"
+      }
+    ],
+    comments: []
+  },
+  {
+    title: "We're Gettin' Dirty",
+    slug: "we-re-gettin-dirty",
+    sourceUrl: "https://www.youtube.com/watch?v=mpzXGFFBbZc",
+    postedAtOriginal: "12/11/2013",
+    author: "DirtyTV",
+    commentCountOriginal: 0,
+    descriptionOriginal:
+      "Dirty FM is coming back with full hard on and completely drenched panties, With your host, Drift!  Featuring Co-host Grim. Although, FM is during the AM and you know you're too busy sleeping your lazy ass off! So The Dirty is getting Dirtier with DIRTY TV! \n\nComing Soon",
+    videos: [
+      {
+        provider: "youtube",
+        videoId: "mpzXGFFBbZc",
+        url: "https://www.youtube.com/watch?v=mpzXGFFBbZc"
       }
     ],
     comments: []
