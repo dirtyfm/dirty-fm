@@ -159,6 +159,14 @@ Auth mode selection lives in `src/lib/authMode.ts`.
 - `local` uses local Signal Control auth.
 - `supabase` uses Supabase auth/admin profile checks.
 
+Runtime config validation lives in `src/lib/runtimeConfig.ts`.
+
+- `DIRTYFM_AUTH_MODE` must be `local` or `supabase` when set.
+- `DIRTYFM_CONTENT_BACKEND` must be `cloudflare-kv` or `supabase` when set.
+- Production/Vercel runtimes require explicit mode values.
+- Vercel production with `DIRTYFM_CONTENT_BACKEND=cloudflare-kv` requires the Cloudflare KV REST variables listed above.
+- `DIRTYFM_AUTH_MODE=local` requires the local operator email, passphrase hash, and session secret listed above.
+
 Keep both paths available unless a future migration intentionally removes one.
 
 ## Security Rules

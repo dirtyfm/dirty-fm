@@ -1,3 +1,8 @@
+import {
+  isProductionLikeRuntime,
+  validateCloudflareKvRestEnv
+} from "../runtimeConfigCore.ts";
+
 type JsonValue = unknown;
 
 export type DirtyKvNamespace = {
@@ -182,6 +187,10 @@ export async function getDirtyfmKvNamespace() {
 
   if (restEnv) {
     return createCloudflareKvRestNamespace(restEnv);
+  }
+
+  if (isProductionLikeRuntime(process.env)) {
+    validateCloudflareKvRestEnv();
   }
 
   return memoryNamespace;

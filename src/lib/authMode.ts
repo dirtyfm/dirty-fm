@@ -1,7 +1,10 @@
-export type DirtyfmAuthMode = "local" | "supabase";
+import type { DirtyfmAuthMode } from "@/lib/runtimeConfigCore";
+import { getValidatedDirtyfmAuthMode } from "@/lib/runtimeConfig";
+
+export type { DirtyfmAuthMode };
 
 export function getDirtyfmAuthMode(): DirtyfmAuthMode {
-  return process.env.DIRTYFM_AUTH_MODE === "local" ? "local" : "supabase";
+  return getValidatedDirtyfmAuthMode();
 }
 
 export function isLocalAuthMode() {

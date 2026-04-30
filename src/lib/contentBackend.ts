@@ -1,16 +1,11 @@
 import "server-only";
-import { isLocalAuthMode } from "@/lib/authMode";
+import type { DirtyfmContentBackend } from "@/lib/runtimeConfigCore";
+import { getValidatedDirtyfmContentBackend } from "@/lib/runtimeConfig";
 
-export type DirtyfmContentBackend = "cloudflare-kv" | "supabase";
+export type { DirtyfmContentBackend };
 
 export function getDirtyfmContentBackend(): DirtyfmContentBackend {
-  const configured = process.env.DIRTYFM_CONTENT_BACKEND;
-
-  if (configured === "cloudflare-kv" || configured === "supabase") {
-    return configured;
-  }
-
-  return isLocalAuthMode() ? "cloudflare-kv" : "supabase";
+  return getValidatedDirtyfmContentBackend();
 }
 
 export function isKvContentBackend() {
