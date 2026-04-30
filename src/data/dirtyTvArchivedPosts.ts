@@ -122,30 +122,6 @@ export const archivedDirtyTvPosts: ArchivedDirtyTvPost[] = [
         videoId: "QQPWiCgAjDo",
         url: "https://www.youtube.com/watch?v=QQPWiCgAjDo",
         embedSrcOriginal: "./DirtyTV_files/QQPWiCgAjDo.html"
-      },
-      {
-        provider: "youtube",
-        videoId: "yGQ4htj4V78",
-        url: "https://www.youtube.com/watch?v=yGQ4htj4V78",
-        embedSrcOriginal: "./DirtyTV_files/yGQ4htj4V78.html"
-      }
-    ],
-    comments: []
-  },
-  {
-    title: "New Morning show",
-    slug: "new-morning-show",
-    sourceUrl: "http://www.dirtyfm.com/dirtytv/new-morning-show",
-    postedAtOriginal: "4/12/2016",
-    author: "Drift",
-    commentCountOriginal: 0,
-    descriptionOriginal: "",
-    videos: [
-      {
-        provider: "youtube",
-        videoId: "LQ2eBjYI93o",
-        url: "https://www.youtube.com/watch?v=LQ2eBjYI93o",
-        embedSrcOriginal: "./DirtyTV_files/LQ2eBjYI93o.html"
       }
     ],
     comments: []
@@ -157,10 +133,6 @@ export const archivedDirtyTvYouTubeChannelUrl =
 
 // Home.html DirtyTV references. Captions are preserved exactly when present.
 export const archivedDirtyTvHomePreviewItems: ArchivedDirtyTvHomePreviewItem[] = [
-  {
-    slug: "new-morning-show",
-    caption: "Morning Show 1/10/16"
-  },
   {
     slug: "missed-the-libertarian-debate",
     caption: "If you missed the libertarian debate..."
