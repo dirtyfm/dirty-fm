@@ -120,10 +120,18 @@ Typecheck:
 npm run typecheck
 ```
 
-There is no package-level test script yet. Focused tests are currently run directly with Node, for example:
+Run the existing Node test suite:
 
 ```bash
-node --test src\lib\kv\store.test.mjs
+npm run test
+```
+
+The package-level test script uses Node's built-in test runner with `--experimental-test-isolation=none` because the existing `.mjs` tests import TypeScript files directly and run reliably in one process.
+
+Run the full local completion gate:
+
+```bash
+npm run check
 ```
 
 ## Environment File
