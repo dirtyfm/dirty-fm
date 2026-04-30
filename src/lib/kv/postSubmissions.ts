@@ -1,8 +1,8 @@
-import { validatePostSubmission, type PostSubmissionInput } from "@/lib/contentValidation";
-import { deleteJsonKey, writeJsonKey } from "@/lib/kv/store";
-import type { KvPostSubmission } from "@/lib/kv/types";
-import { addToIndex, removeFromIndex } from "@/lib/kv/indexes";
-import { createId, keyFor, keys, nowIso } from "@/lib/kv/keys";
+import { validatePostSubmission, type PostSubmissionInput } from "../contentValidation.ts";
+import { deleteJsonKey, writeJsonKey } from "./store.ts";
+import type { KvPostSubmission } from "./types.ts";
+import { addToIndex, removeFromIndex } from "./indexes.ts";
+import { createId, keyFor, keys, nowIso } from "./keys.ts";
 
 export async function createKvPostSubmission(input: PostSubmissionInput) {
   const validated = validatePostSubmission(input);

@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { readRequiredServerEnv } from "@/lib/env";
-import type { Database } from "@/lib/db/types";
+import { readRequiredServerEnv } from "../env.ts";
+import type { Database } from "./types.ts";
 
 // Retained for the explicit Supabase modes. Current production uses Cloudflare KV/local auth.
 export function createSupabaseServerClient(accessToken?: string) {

@@ -1,4 +1,4 @@
-import { readJsonKey, writeJsonKey } from "@/lib/kv/store";
+import { readJsonKey, writeJsonKey } from "./store.ts";
 
 export async function getIndex(key: string) {
   return readJsonKey<string[]>(key, []);

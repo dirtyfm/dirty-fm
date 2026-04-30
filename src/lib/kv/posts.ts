@@ -1,11 +1,11 @@
-import { getPublishedPosts, type DirtyNewsPost } from "@/data/posts";
-import { validatePostSubmission, type PostSubmissionInput } from "@/lib/contentValidation";
-import type { PostSubmissionStatus } from "@/lib/db/types";
-import { cleanAdminNotes, createDirtyNewsExcerpt, createDirtyNewsSlug } from "@/lib/submissionWorkflows";
-import { readJsonKey, writeJsonKey, deleteJsonKey } from "@/lib/kv/store";
-import type { KvDirtyNewsPost, KvPostSubmission } from "@/lib/kv/types";
-import { addToIndex, byPublishedDesc, readMany, removeFromIndex } from "@/lib/kv/indexes";
-import { createId, keyFor, keys, nowIso } from "@/lib/kv/keys";
+import { getPublishedPosts, type DirtyNewsPost } from "../../data/posts.ts";
+import { validatePostSubmission, type PostSubmissionInput } from "../contentValidation.ts";
+import type { PostSubmissionStatus } from "../db/types.ts";
+import { cleanAdminNotes, createDirtyNewsExcerpt, createDirtyNewsSlug } from "../submissionWorkflows.ts";
+import { readJsonKey, writeJsonKey, deleteJsonKey } from "./store.ts";
+import type { KvDirtyNewsPost, KvPostSubmission } from "./types.ts";
+import { addToIndex, byPublishedDesc, readMany, removeFromIndex } from "./indexes.ts";
+import { createId, keyFor, keys, nowIso } from "./keys.ts";
 
 function postToPublic(post: KvDirtyNewsPost): DirtyNewsPost {
   return {

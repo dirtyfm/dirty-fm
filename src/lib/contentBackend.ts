@@ -1,6 +1,6 @@
 import "server-only";
-import type { DirtyfmContentBackend } from "@/lib/runtimeConfigCore";
-import { getValidatedDirtyfmContentBackend } from "@/lib/runtimeConfig";
+import type { DirtyfmContentBackend } from "./runtimeConfigCore.ts";
+import { getValidatedDirtyfmContentBackend } from "./runtimeConfig.ts";
 
 export type { DirtyfmContentBackend };
 

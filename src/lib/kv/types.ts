@@ -1,4 +1,4 @@
-import type { ContactSubmissionStatus, PostSubmissionStatus } from "@/lib/db/types";
+import type { ContactSubmissionStatus, PostSubmissionStatus } from "../db/types.ts";
 
 export type KvPostStatus = "archived" | "draft" | "published";
 

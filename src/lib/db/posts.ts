@@ -1,9 +1,11 @@
 import "server-only";
-import { getPublishedPosts, type DirtyNewsPost } from "@/data/posts";
-import { mapVisiblePublicComments, type PublicDirtyNewsComment } from "@/lib/db/commentMapping";
-import { createSupabaseServerClient } from "@/lib/db/supabase";
-import { isKvContentBackend } from "@/lib/contentBackend";
-import { getKvPublicPosts, getKvVisibleCommentsForPost } from "@/lib/kv/contentStore";
+import { getPublishedPosts, type DirtyNewsPost } from "../../data/posts.ts";
+import { mapVisiblePublicComments, type PublicDirtyNewsComment } from "./commentMapping.ts";
+import { createSupabaseServerClient } from "./supabase.ts";
+import { isKvContentBackend } from "../contentBackend.ts";
+import { getKvVisibleCommentsForPost } from "../kv/comments.ts";
+import { getKvPublicPosts } from "../kv/posts.ts";
+import { mergePublicDirtyNewsPosts } from "./publicPostsCore.ts";
 
 type DbPost = {
   author: string;
@@ -58,12 +60,7 @@ export async function getPublicDirtyNewsPosts() {
 
   if (isKvContentBackend()) {
     const kvPosts = await getKvPublicPosts();
-    const kvSlugs = new Set(kvPosts.map((post) => post.slug));
-    const staticPostsNotInKv = fallbackPosts.filter((post) => !kvSlugs.has(post.slug));
-
-    return [...kvPosts, ...staticPostsNotInKv].sort(
-      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+    return mergePublicDirtyNewsPosts(kvPosts, fallbackPosts);
   }
 
   if (!canUseSupabasePublicReads()) {
@@ -83,12 +80,7 @@ export async function getPublicDirtyNewsPosts() {
   }
 
   const dbPosts = (data as DbPost[]).map(mapDbPost);
-  const dbSlugs = new Set(dbPosts.map((post) => post.slug));
-  const staticPostsNotInDb = fallbackPosts.filter((post) => !dbSlugs.has(post.slug));
-
-  return [...dbPosts, ...staticPostsNotInDb].sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  );
+  return mergePublicDirtyNewsPosts(dbPosts, fallbackPosts);
 }
 
 export async function getVisibleCommentsForPost(

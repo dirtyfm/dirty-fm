@@ -1,10 +1,10 @@
-import { getPublishedPosts } from "@/data/posts";
-import { validateComment, type CommentInput } from "@/lib/contentValidation";
-import { mapVisiblePublicComments } from "@/lib/db/commentMapping";
-import { readJsonKey, writeJsonKey, deleteJsonKey } from "@/lib/kv/store";
-import type { KvComment, KvDirtyNewsPost } from "@/lib/kv/types";
-import { addToIndex, readMany, removeFromIndex } from "@/lib/kv/indexes";
-import { createId, keyFor, keys, nowIso } from "@/lib/kv/keys";
+import { getPublishedPosts } from "../../data/posts.ts";
+import { validateComment, type CommentInput } from "../contentValidation.ts";
+import { mapVisiblePublicComments } from "../db/commentMapping.ts";
+import { readJsonKey, writeJsonKey, deleteJsonKey } from "./store.ts";
+import type { KvComment, KvDirtyNewsPost } from "./types.ts";
+import { addToIndex, readMany, removeFromIndex } from "./indexes.ts";
+import { createId, keyFor, keys, nowIso } from "./keys.ts";
 
 export async function getKvVisibleCommentsForPost(postId: string) {
   const comments = await readMany<KvComment>(keys.commentsIndex, (id) => keyFor("comments", id));

@@ -3,7 +3,7 @@ import {
   getValidatedDirtyfmAuthMode,
   getValidatedDirtyfmContentBackend,
   validateDirtyfmRuntimeConfig
-} from "@/lib/runtimeConfigCore";
+} from "./runtimeConfigCore.ts";
 
 export {
   getValidatedDirtyfmAuthMode,

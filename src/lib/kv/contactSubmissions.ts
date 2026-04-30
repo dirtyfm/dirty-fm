@@ -1,12 +1,12 @@
-import { validateContactSubmission, validatePostSubmission, type ContactSubmissionInput } from "@/lib/contentValidation";
-import { createDirtyNewsDraftFromContact } from "@/lib/contactToDirtyNews";
-import type { ContactSubmissionStatus } from "@/lib/db/types";
-import { cleanAdminNotes } from "@/lib/submissionWorkflows";
-import { createKvContactSubmissionRecord } from "@/lib/kv/contactSubmissionCore";
-import { readJsonKey, writeJsonKey, deleteJsonKey } from "@/lib/kv/store";
-import type { KvContactSubmission, KvPostSubmission } from "@/lib/kv/types";
-import { addToIndex, removeFromIndex } from "@/lib/kv/indexes";
-import { createId, keyFor, keys, nowIso } from "@/lib/kv/keys";
+import { validateContactSubmission, validatePostSubmission, type ContactSubmissionInput } from "../contentValidation.ts";
+import { createDirtyNewsDraftFromContact } from "../contactToDirtyNews.ts";
+import type { ContactSubmissionStatus } from "../db/types.ts";
+import { cleanAdminNotes } from "../submissionWorkflows.ts";
+import { createKvContactSubmissionRecord } from "./contactSubmissionCore.ts";
+import { readJsonKey, writeJsonKey, deleteJsonKey } from "./store.ts";
+import type { KvContactSubmission, KvPostSubmission } from "./types.ts";
+import { addToIndex, removeFromIndex } from "./indexes.ts";
+import { createId, keyFor, keys, nowIso } from "./keys.ts";
 
 export async function createKvContactSubmission(input: ContactSubmissionInput) {
   const validated = validateContactSubmission(input);
