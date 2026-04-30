@@ -10,7 +10,7 @@ export type SendSignalCTAProps = {
 
 export function SendSignalCTA({
   title = "Got something for the broadcast?",
-  body = "Send it in. Keep it readable. Don't make it boring.",
+  body,
   href = "/contact",
   actionLabel = "Send a Signal"
 }: SendSignalCTAProps) {
@@ -25,7 +25,7 @@ export function SendSignalCTA({
         <h2 className="font-display text-[clamp(2rem,7vw,3.6rem)] font-black uppercase leading-none text-dirty-ash">
           {title}
         </h2>
-        <p className="max-w-2xl text-dirty-gray">{body}</p>
+        {body ? <p className="max-w-2xl text-dirty-gray">{body}</p> : null}
       </div>
       <DirtyButton href={href} variant="primary">
         {actionLabel}

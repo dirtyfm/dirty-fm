@@ -275,9 +275,8 @@ export default async function Home() {
       />
 
       <SendSignalCTA
-        body="Got something? Send it before you talk yourself out of it."
         href="/contact"
-        title="Send a Signal Before the Static Eats It."
+        title="Got something? Send it before you talk yourself out of it."
       />
     </div>
   );
