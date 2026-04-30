@@ -139,4 +139,38 @@
   .loading-slab {
     @apply min-h-12 border border-[rgba(183,178,168,0.22)] bg-[linear-gradient(90deg,rgba(183,178,168,0.05),rgba(214,184,74,0.11),rgba(183,178,168,0.05))] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.35)];
   }
+
+  .dirty-ticker-track {
+    animation: dirty-ticker-scroll 28s linear infinite;
+  }
+
+  .dirty-ticker-window:hover .dirty-ticker-track,
+  .dirty-ticker-window:focus .dirty-ticker-track,
+  .dirty-ticker-window:focus-within .dirty-ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes dirty-ticker-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dirty-ticker-window {
+    overflow-x: auto;
+  }
+
+  .dirty-ticker-track {
+    animation: none;
+  }
+
+  .dirty-ticker-copy {
+    display: none;
+  }
 }

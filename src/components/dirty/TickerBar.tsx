@@ -12,6 +12,13 @@ export function TickerBar({
   className
 }: TickerBarProps) {
   const tickerItems = items.length > 0 ? items : ["Static on the wire"];
+  const renderTickerItems = (keyPrefix: string) =>
+    tickerItems.map((item) => (
+      <span className="inline-flex shrink-0 items-center gap-4" key={`${keyPrefix}-${item}`}>
+        <span className="h-2 w-2 shrink-0 bg-dirty-red" aria-hidden="true" />
+        <span>{item}</span>
+      </span>
+    ));
 
   return (
     <div
@@ -24,13 +31,21 @@ export function TickerBar({
       <p className="shrink-0 bg-dirty-red px-3 py-2 font-utility text-xs font-black uppercase leading-none text-dirty-black">
         {label}
       </p>
-      <div className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-1 px-3 py-2 font-utility text-xs font-bold uppercase leading-none min-[760px]:flex-nowrap">
-        {tickerItems.map((item) => (
-          <span className="flex min-w-0 items-center gap-4" key={item}>
-            <span className="h-2 w-2 shrink-0 bg-dirty-red" aria-hidden="true" />
-            <span className="truncate">{item}</span>
-          </span>
-        ))}
+      <div
+        className="dirty-ticker-window min-w-0 flex-1 overflow-hidden px-3 py-2 font-utility text-xs font-bold uppercase leading-none"
+        tabIndex={0}
+      >
+        <div className="dirty-ticker-track flex w-max whitespace-nowrap">
+          <div className="dirty-ticker-group flex shrink-0 items-center gap-6 pr-6">
+            {renderTickerItems("primary")}
+          </div>
+          <div
+            className="dirty-ticker-copy dirty-ticker-group flex shrink-0 items-center gap-6 pr-6"
+            aria-hidden="true"
+          >
+            {renderTickerItems("copy")}
+          </div>
+        </div>
       </div>
     </div>
   );
