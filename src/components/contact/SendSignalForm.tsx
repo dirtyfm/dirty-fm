@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState, useTransition } from "react";
 import { DirtyButton, SectionStamp } from "@/components/dirty";
 import { cx } from "@/components/dirty/shared";
+import { submitContactSignal } from "@/app/contact/actions";
 import {
   emptyContactFormValues,
   hasContactValidationErrors,
@@ -40,8 +41,9 @@ function FieldError({ message }: { message?: string }) {
 
 export function SendSignalForm() {
   const [values, setValues] = useState<ContactFormValues>(emptyContactFormValues);
-  const [errors, setErrors] = useState<ContactValidationErrors>({});
+  const [errors, setErrors] = useState<ContactValidationErrors & Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [isPending, startTransition] = useTransition();
 
   const selectedTypeNote = useMemo(
     () => (values.submissionType ? typeNotes[values.submissionType] : null),
@@ -65,20 +67,30 @@ export function SendSignalForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    try {
-      const nextErrors = validateContactForm(values);
-      setErrors(nextErrors);
+    const nextErrors = validateContactForm(values);
+    setErrors(nextErrors);
 
-      if (hasContactValidationErrors(nextErrors)) {
-        setStatus("error");
-        return;
-      }
-
-      setStatus("success");
-      setValues(emptyContactFormValues);
-    } catch {
+    if (hasContactValidationErrors(nextErrors)) {
       setStatus("error");
+      return;
     }
+
+    startTransition(async () => {
+      try {
+        const result = await submitContactSignal(values);
+
+        if (!result.ok) {
+          setErrors(result.errors ?? {});
+          setStatus("error");
+          return;
+        }
+
+        setStatus("success");
+        setValues(emptyContactFormValues);
+      } catch {
+        setStatus("error");
+      }
+    });
   }
 
   return (
@@ -86,8 +98,8 @@ export function SendSignalForm() {
       <div className="flex flex-col gap-3 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
         <SectionStamp label="Intake Form" kicker="Open Mic" tone="red" />
         <p className="max-w-xl font-utility text-xs font-bold uppercase text-dirty-gray">
-          Client-side check only for now. No email leaves the browser. No raw
-          HTML gets rendered back at you.
+          Server-side intake writes a pending file. No raw HTML gets rendered
+          back at you.
         </p>
       </div>
 
@@ -105,8 +117,8 @@ export function SendSignalForm() {
               Signal logged.
             </p>
             <p className="mt-2 text-dirty-gray">
-              The browser-side intake passed. Backend wiring comes later, so no
-              email was sent and no public post was created.
+              Signal Control has the pending file. It is internal only; nothing
+              was published to the public wire.
             </p>
           </div>
         ) : null}
@@ -123,6 +135,11 @@ export function SendSignalForm() {
               Fix the marked fields and send it again. The machine is picky
               before it gets useful.
             </p>
+            {errors.database ? (
+              <p className="mt-2 font-utility text-xs font-bold uppercase text-dirty-yellow">
+                {errors.database}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -277,8 +294,8 @@ export function SendSignalForm() {
             Sending this form validates the intake locally. It does not publish
             a post, create an account, or fire an email from client-side code.
           </p>
-          <DirtyButton className="min-[640px]:min-w-48" type="submit">
-            Send a Signal
+          <DirtyButton className="min-[640px]:min-w-48" disabled={isPending} type="submit">
+            {isPending ? "Sending Static" : "Send a Signal"}
           </DirtyButton>
         </div>
       </form>

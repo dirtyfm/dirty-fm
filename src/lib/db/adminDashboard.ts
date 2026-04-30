@@ -13,6 +13,7 @@ export type AdminDashboardContact = Pick<
   | "submission_type"
   | "message"
   | "status"
+  | "admin_notes"
   | "can_read_on_air"
   | "created_at"
 >;
@@ -27,6 +28,7 @@ export type AdminDashboardPostSubmission = Pick<
   | "body"
   | "source_url"
   | "status"
+  | "admin_notes"
   | "created_at"
 >;
 
@@ -109,14 +111,13 @@ export async function getAdminDashboardData(
     supabase
       .from("contact_submissions")
       .select(
-        "id, name, email, subject, submission_type, message, status, can_read_on_air, created_at"
+        "id, name, email, subject, submission_type, message, status, admin_notes, can_read_on_air, created_at"
       )
       .order("created_at", { ascending: false })
       .limit(8),
     supabase
       .from("post_submissions")
-      .select("id, name, email, title, category, body, source_url, status, created_at")
-      .eq("status", "pending")
+      .select("id, name, email, title, category, body, source_url, status, admin_notes, created_at")
       .order("created_at", { ascending: false })
       .limit(8),
     supabase

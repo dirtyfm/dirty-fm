@@ -6,6 +6,7 @@ import {
   getPostBySlug,
   getPublishedPosts
 } from "@/data/posts";
+import { getPublicDirtyNewsPosts } from "@/lib/db/posts";
 
 type DirtyNewsPostPageProps = {
   params: Promise<{
@@ -19,11 +20,14 @@ export function generateStaticParams() {
   }));
 }
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params
 }: DirtyNewsPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const posts = await getPublicDirtyNewsPosts();
+  const post = posts.find((item) => item.slug === slug) ?? getPostBySlug(slug);
 
   if (!post) {
     return {
@@ -41,7 +45,8 @@ export default async function DirtyNewsPostPage({
   params
 }: DirtyNewsPostPageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const posts = await getPublicDirtyNewsPosts();
+  const post = posts.find((item) => item.slug === slug) ?? getPostBySlug(slug);
 
   if (!post) {
     notFound();

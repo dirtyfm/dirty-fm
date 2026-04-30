@@ -6,8 +6,8 @@ import {
   type CommentInput,
   type ContactSubmissionInput,
   type PostSubmissionInput
-} from "@/lib/contentValidation";
-import type { Database } from "@/lib/db/types";
+} from "../contentValidation.ts";
+import type { Database } from "./types";
 
 type DirtySupabaseClient = SupabaseClient<Database>;
 
@@ -29,6 +29,7 @@ export async function createContactSubmission(
       email: validated.data.email,
       message: validated.data.message,
       name: validated.data.name,
+      status: "pending",
       subject: validated.data.subject,
       submission_type: validated.data.submissionType
     })
@@ -60,6 +61,7 @@ export async function createPostSubmission(
       email: validated.data.email,
       name: validated.data.name,
       source_url: validated.data.sourceUrl ?? null,
+      status: "pending",
       title: validated.data.title
     })
     .select("id, created_at")

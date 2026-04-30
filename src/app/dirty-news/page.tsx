@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { ArchiveCard, DirtyButton, DirtyNewsCard, SectionStamp, StaticPanel } from "@/components/dirty";
+import { DirtyNewsSubmissionForm } from "@/components/dirty-news/DirtyNewsSubmissionForm";
 import {
-  formatPostDate,
-  getDirtyNewsCategories,
-  getFeaturedPost,
-  getPublishedPostsByCategory
+  formatPostDate
 } from "@/data/posts";
+import {
+  getDirtyNewsCategoriesFromPosts,
+  getPublicDirtyNewsPosts,
+  getPublishedPostsByCategoryFromPosts
+} from "@/lib/db/posts";
 
 type DirtyNewsPageProps = {
   searchParams?: Promise<{
@@ -19,16 +22,20 @@ export const metadata: Metadata = {
     "Dirty News from DirtyFM: raw commentary, dispatches, rants, and notes from the wrong side of the broadcast."
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function DirtyNewsPage({
   searchParams
 }: DirtyNewsPageProps) {
   const params = await searchParams;
   const activeCategory = params?.category;
-  const categories = getDirtyNewsCategories();
-  const posts = getPublishedPostsByCategory(
+  const publishedPosts = await getPublicDirtyNewsPosts();
+  const categories = getDirtyNewsCategoriesFromPosts(publishedPosts);
+  const posts = getPublishedPostsByCategoryFromPosts(
+    publishedPosts,
     categories.includes(activeCategory ?? "") ? activeCategory : undefined
   );
-  const featuredPost = getFeaturedPost();
+  const featuredPost = publishedPosts[0] ?? null;
 
   return (
     <div className="grid gap-9 min-[760px]:gap-12">
@@ -145,6 +152,8 @@ export default async function DirtyNewsPage({
           in the dumpster where it belongs.
         </p>
       </StaticPanel>
+
+      <DirtyNewsSubmissionForm />
     </div>
   );
 }

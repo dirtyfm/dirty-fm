@@ -1,4 +1,16 @@
-export type SubmissionStatus = "pending" | "approved" | "rejected" | "archived";
+export type ContactSubmissionStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "archived"
+  | "read_on_air";
+export type PostSubmissionStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "draft"
+  | "published"
+  | "archived";
 export type PostStatus = "draft" | "published" | "archived";
 export type AdminRole = "admin" | "editor";
 
@@ -37,7 +49,8 @@ export type Database = {
           message: string;
           attachment_url: string | null;
           can_read_on_air: boolean;
-          status: SubmissionStatus;
+          status: ContactSubmissionStatus;
+          admin_notes: string | null;
           reviewed_by: string | null;
           reviewed_at: string | null;
           created_at: string;
@@ -50,7 +63,8 @@ export type Database = {
           message: string;
           attachment_url?: string | null;
           can_read_on_air: boolean;
-          status?: SubmissionStatus;
+          status?: ContactSubmissionStatus;
+          admin_notes?: string | null;
           reviewed_by?: null;
           reviewed_at?: null;
           created_at?: string;
@@ -67,7 +81,8 @@ export type Database = {
           category: string;
           body: string;
           source_url: string | null;
-          status: SubmissionStatus;
+          status: PostSubmissionStatus;
+          admin_notes: string | null;
           reviewed_by: string | null;
           reviewed_at: string | null;
           created_at: string;
@@ -79,7 +94,8 @@ export type Database = {
           category: string;
           body: string;
           source_url?: string | null;
-          status?: SubmissionStatus;
+          status?: PostSubmissionStatus;
+          admin_notes?: string | null;
           reviewed_by?: null;
           reviewed_at?: null;
           created_at?: string;
@@ -167,7 +183,8 @@ export type Database = {
     Enums: {
       admin_role: AdminRole;
       post_status: PostStatus;
-      submission_status: SubmissionStatus;
+      contact_submission_status: ContactSubmissionStatus;
+      post_submission_status: PostSubmissionStatus;
     };
   };
 };

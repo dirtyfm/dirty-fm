@@ -14,6 +14,18 @@ import {
   type AdminDashboardPost,
   type AdminDashboardPostSubmission
 } from "@/lib/db/adminDashboard";
+import { postSubmissionCategories } from "@/lib/contentValidation";
+import {
+  contactSubmissionStatuses,
+  postSubmissionStatuses
+} from "@/lib/submissionWorkflows";
+import {
+  deleteContactSubmission,
+  deletePostSubmission,
+  publishPostSubmission,
+  updateContactSubmission,
+  updatePostSubmission
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +48,9 @@ function formatDate(value: string | null) {
 function excerpt(value: string, maxLength = 180) {
   return value.length > maxLength ? `${value.slice(0, maxLength).trim()}...` : value;
 }
+
+const adminFieldBase =
+  "w-full border border-[rgba(183,178,168,0.28)] bg-dirty-black/70 px-3 py-2 text-sm text-dirty-ash outline-none focus:border-dirty-yellow";
 
 function EmptyWire({ label }: { label: string }) {
   return (
@@ -115,6 +130,43 @@ function ContactList({ contacts }: { contacts: AdminDashboardContact[] }) {
             {contact.can_read_on_air ? "yes" : "no"}
           </p>
           <p className="mt-3 text-dirty-ash">{excerpt(contact.message)}</p>
+          <form action={updateContactSubmission} className="mt-4 grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-4">
+            <input name="id" type="hidden" value={contact.id} />
+            <div className="grid gap-3 min-[760px]:grid-cols-[12rem_minmax(0,1fr)_auto] min-[760px]:items-end">
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Status
+                </span>
+                <select className={adminFieldBase} defaultValue={contact.status} name="status">
+                  {contactSubmissionStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Admin Notes
+                </span>
+                <textarea
+                  className={adminFieldBase}
+                  defaultValue={contact.admin_notes ?? ""}
+                  name="admin_notes"
+                  rows={2}
+                />
+              </label>
+              <button className="button button-secondary" type="submit">
+                Save Signal
+              </button>
+            </div>
+          </form>
+          <form action={deleteContactSubmission} className="mt-3">
+            <input name="id" type="hidden" value={contact.id} />
+            <button className="font-utility text-xs font-black uppercase text-dirty-red" type="submit">
+              Delete if Needed
+            </button>
+          </form>
         </article>
       ))}
     </div>
@@ -143,6 +195,106 @@ function SubmissionList({ submissions }: { submissions: AdminDashboardPostSubmis
               Source Wire
             </a>
           ) : null}
+          <form action={updatePostSubmission} className="mt-4 grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-4">
+            <input name="id" type="hidden" value={submission.id} />
+            <input name="name" type="hidden" value={submission.name} />
+            <input name="email" type="hidden" value={submission.email} />
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_14rem_12rem]">
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Title
+                </span>
+                <input className={adminFieldBase} defaultValue={submission.title} name="title" />
+              </label>
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Category
+                </span>
+                <select className={adminFieldBase} defaultValue={submission.category} name="category">
+                  {postSubmissionCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Status
+                </span>
+                <select className={adminFieldBase} defaultValue={submission.status} name="status">
+                  {postSubmissionStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="grid gap-1">
+              <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                Body
+              </span>
+              <textarea className={adminFieldBase} defaultValue={submission.body} name="body" rows={6} />
+            </label>
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Source URL
+                </span>
+                <input className={adminFieldBase} defaultValue={submission.source_url ?? ""} name="source_url" />
+              </label>
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Admin Notes
+                </span>
+                <input className={adminFieldBase} defaultValue={submission.admin_notes ?? ""} name="admin_notes" />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button className="button button-secondary" type="submit">
+                Save Edit
+              </button>
+            </div>
+          </form>
+          <form action={publishPostSubmission} className="mt-3 grid gap-3 border border-[rgba(214,184,74,0.3)] bg-dirty-black/35 p-3">
+            <input name="id" type="hidden" value={submission.id} />
+            <input name="name" type="hidden" value={submission.name} />
+            <input name="email" type="hidden" value={submission.email} />
+            <input name="title" type="hidden" value={submission.title} />
+            <input name="category" type="hidden" value={submission.category} />
+            <input name="body" type="hidden" value={submission.body} />
+            <input name="source_url" type="hidden" value={submission.source_url ?? ""} />
+            <input name="admin_notes" type="hidden" value={submission.admin_notes ?? ""} />
+            <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Post Author
+                </span>
+                <input className={adminFieldBase} defaultValue="DirtyFM Desk" name="author" />
+              </label>
+              <label className="grid gap-1">
+                <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
+                  Excerpt
+                </span>
+                <input className={adminFieldBase} defaultValue={excerpt(submission.body, 180)} name="excerpt" />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button className="button button-secondary" name="intent" type="submit" value="draft">
+                Approve as Draft
+              </button>
+              <button className="button button-primary" name="intent" type="submit" value="publish">
+                Publish File
+              </button>
+            </div>
+          </form>
+          <form action={deletePostSubmission} className="mt-3">
+            <input name="id" type="hidden" value={submission.id} />
+            <button className="font-utility text-xs font-black uppercase text-dirty-red" type="submit">
+              Delete if Needed
+            </button>
+          </form>
         </article>
       ))}
     </div>

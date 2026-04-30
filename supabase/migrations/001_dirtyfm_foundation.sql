@@ -3,7 +3,8 @@
 
 create extension if not exists pgcrypto;
 
-create type public.submission_status as enum ('pending', 'approved', 'rejected', 'archived');
+create type public.contact_submission_status as enum ('pending', 'approved', 'rejected', 'archived', 'read_on_air');
+create type public.post_submission_status as enum ('pending', 'approved', 'rejected', 'draft', 'published', 'archived');
 create type public.post_status as enum ('draft', 'published', 'archived');
 create type public.admin_role as enum ('admin', 'editor');
 
@@ -24,7 +25,8 @@ create table public.contact_submissions (
   message text not null,
   attachment_url text,
   can_read_on_air boolean not null default false,
-  status public.submission_status not null default 'pending',
+  status public.contact_submission_status not null default 'pending',
+  admin_notes text,
   reviewed_by uuid references auth.users (id) on delete set null,
   reviewed_at timestamptz,
   created_at timestamptz not null default now(),
@@ -57,7 +59,8 @@ create table public.post_submissions (
   category text not null,
   body text not null,
   source_url text,
-  status public.submission_status not null default 'pending',
+  status public.post_submission_status not null default 'pending',
+  admin_notes text,
   reviewed_by uuid references auth.users (id) on delete set null,
   reviewed_at timestamptz,
   created_at timestamptz not null default now(),
