@@ -26,7 +26,7 @@ function renderStrips(time: number) {
   const currentScrollY = window.scrollY;
   const scrollDelta = currentScrollY - lastScrollY;
   const scrollVelocity = scrollDelta / elapsedFrames;
-  const target = clamp(-scrollVelocity * 1.35, -15, 15);
+  const target = clamp(-scrollVelocity * 1.2, -14, 14);
 
   springVelocity += (target - offset) * 0.18;
   springVelocity *= 0.72;
@@ -84,8 +84,8 @@ export function ArchiveTapeStrip() {
         }
 
         const weight = getSquareWeight(index);
-        const yJitter = Math.sin(time / 160 + index * 0.7) * Math.abs(currentOffset) * weight * 0.04;
-        square.style.transform = `translate3d(${(currentOffset * weight).toFixed(3)}px, ${yJitter.toFixed(3)}px, 0)`;
+        const xJitter = Math.sin(time / 170 + index * 0.65) * Math.abs(currentOffset) * weight * 0.035;
+        square.style.transform = `translate3d(${xJitter.toFixed(3)}px, ${(currentOffset * weight).toFixed(3)}px, 0)`;
       }
     });
   }, []);
