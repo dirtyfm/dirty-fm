@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-const squareIndexes = Array.from({ length: 38 }, (_, index) => index);
+const squareIndexes = Array.from({ length: 28 }, (_, index) => index);
 const stripSubscribers = new Set<(offset: number, time: number) => void>();
 
 let frameId = 0;
@@ -93,12 +93,12 @@ export function ArchiveTapeStrip() {
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 -top-1 z-20 grid h-10 grid-cols-[repeat(38,minmax(0,1fr))] items-start overflow-visible px-3 pt-0.5 opacity-60"
+      className="pointer-events-none absolute inset-x-0 -top-1 z-20 grid h-10 grid-cols-[repeat(28,minmax(0,1fr))] items-start overflow-visible px-4 pt-0.5 opacity-60"
       aria-hidden="true"
     >
       {squareIndexes.map((index) => (
         <span
-          className="mx-auto block h-2.5 w-2.5 bg-dirty-yellow/40 will-change-transform"
+          className="mx-auto block h-3 w-3 bg-dirty-yellow/40 will-change-transform"
           key={index}
           ref={(element) => {
             squaresRef.current[index] = element;
