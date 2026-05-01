@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArchiveTapeStrip } from "./ArchiveTapeStrip";
 import { cx, type DirtyTone, toneStyles } from "./shared";
 
 export type ArchiveMeta = {
@@ -35,10 +36,7 @@ export function ArchiveCard({
         className
       )}
     >
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-2 bg-[repeating-linear-gradient(90deg,rgba(214,184,74,0.38)_0,rgba(214,184,74,0.38)_10px,transparent_10px,transparent_18px)] opacity-60"
-        aria-hidden="true"
-      />
+      <ArchiveTapeStrip />
       <p className={cx("font-utility text-xs font-black uppercase tracking-[0.08em]", toneStyles[tone].text)}>
         {label}
       </p>
