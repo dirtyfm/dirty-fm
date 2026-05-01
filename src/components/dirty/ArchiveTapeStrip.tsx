@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 
 const squareIndexes = Array.from({ length: 38 }, (_, index) => index);
-const middleIndex = (squareIndexes.length - 1) / 2;
 const stripSubscribers = new Set<(offset: number, time: number) => void>();
 
 let frameId = 0;
@@ -17,8 +16,10 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function getSquareWeight(index: number) {
-  const distanceFromMiddle = Math.abs(index - middleIndex);
-  return clamp(1 - distanceFromMiddle / middleIndex, 0.14, 1);
+  const normalizedPosition = index / (squareIndexes.length - 1);
+  const anchoredArc = Math.sin(normalizedPosition * Math.PI);
+
+  return Math.pow(anchoredArc, 1.55);
 }
 
 function renderStrips(time: number) {
@@ -26,10 +27,10 @@ function renderStrips(time: number) {
   const currentScrollY = window.scrollY;
   const scrollDelta = currentScrollY - lastScrollY;
   const scrollVelocity = scrollDelta / elapsedFrames;
-  const target = clamp(-scrollVelocity * 1.2, -14, 14);
+  const target = clamp(-scrollVelocity * 1.55, -22, 22);
 
-  springVelocity += (target - offset) * 0.18;
-  springVelocity *= 0.72;
+  springVelocity += (target - offset) * 0.115;
+  springVelocity *= 0.84;
   offset += springVelocity;
 
   if (Math.abs(scrollDelta) < 0.02 && Math.abs(offset) < 0.02 && Math.abs(springVelocity) < 0.02) {
@@ -84,7 +85,7 @@ export function ArchiveTapeStrip() {
         }
 
         const weight = getSquareWeight(index);
-        const xJitter = Math.sin(time / 170 + index * 0.65) * Math.abs(currentOffset) * weight * 0.035;
+        const xJitter = Math.sin(time / 170 + index * 0.65) * Math.abs(currentOffset) * weight * 0.025;
         square.style.transform = `translate3d(${xJitter.toFixed(3)}px, ${(currentOffset * weight).toFixed(3)}px, 0)`;
       }
     });
@@ -92,12 +93,12 @@ export function ArchiveTapeStrip() {
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 top-0 flex h-3 items-start gap-2 overflow-hidden px-3 pt-0.5 opacity-60"
+      className="pointer-events-none absolute inset-x-0 -top-1 z-20 grid h-10 grid-cols-[repeat(38,minmax(0,1fr))] items-start overflow-visible px-3 pt-0.5 opacity-60"
       aria-hidden="true"
     >
       {squareIndexes.map((index) => (
         <span
-          className="block h-2.5 w-2.5 shrink-0 bg-dirty-yellow/40 will-change-transform"
+          className="mx-auto block h-2.5 w-2.5 bg-dirty-yellow/40 will-change-transform"
           key={index}
           ref={(element) => {
             squaresRef.current[index] = element;
