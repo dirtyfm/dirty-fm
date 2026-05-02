@@ -149,6 +149,101 @@
   .dirty-ticker-window:focus-within .dirty-ticker-track {
     animation-play-state: paused;
   }
+
+  .scroll-stare-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+    mix-blend-mode: screen;
+    transition: opacity 70ms linear;
+  }
+
+  .scroll-stare-background::before {
+    position: absolute;
+    inset: -12%;
+    content: "";
+    background:
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 5px,
+        rgba(183, 178, 168, 0.045) 5px,
+        rgba(183, 178, 168, 0.045) 6px
+      ),
+      radial-gradient(circle at 32% 44%, rgba(214, 184, 74, 0.055), transparent 18rem),
+      radial-gradient(circle at 72% 22%, rgba(209, 42, 31, 0.05), transparent 16rem);
+    filter: blur(0.4px);
+    opacity: 0.58;
+  }
+
+  .scroll-stare-background[data-scrolling="true"] {
+    opacity: 1;
+  }
+
+  .scroll-stare-face {
+    position: absolute;
+    display: block;
+    width: clamp(8rem, 16vw, 16rem);
+    aspect-ratio: 0.72;
+    border-radius: 48% 52% 46% 54% / 36% 35% 63% 64%;
+    background:
+      radial-gradient(circle at 36% 38%, rgba(183, 178, 168, 0.9) 0 0.34rem, transparent 0.42rem),
+      radial-gradient(circle at 64% 38%, rgba(183, 178, 168, 0.9) 0 0.34rem, transparent 0.42rem),
+      radial-gradient(ellipse at 50% 54%, rgba(183, 178, 168, 0.28) 0 0.2rem, transparent 0.7rem),
+      radial-gradient(ellipse at 50% 72%, rgba(209, 42, 31, 0.32) 0 0.12rem, transparent 0.8rem),
+      radial-gradient(ellipse at 50% 48%, rgba(183, 178, 168, 0.18), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(8, 8, 7, 0.82), transparent 69%);
+    filter: blur(1.8px) contrast(1.45);
+    opacity: 0;
+    transform: translate3d(0, 0.6rem, 0) scale(0.98);
+    transition:
+      opacity 55ms linear,
+      transform 90ms linear;
+  }
+
+  .scroll-stare-face::before {
+    position: absolute;
+    inset: 13% 18%;
+    content: "";
+    background:
+      linear-gradient(90deg, transparent 46%, rgba(183, 178, 168, 0.18) 48% 52%, transparent 54%),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0,
+        transparent 0.45rem,
+        rgba(183, 178, 168, 0.16) 0.45rem,
+        rgba(183, 178, 168, 0.16) 0.5rem
+      );
+    opacity: 0.55;
+  }
+
+  .scroll-stare-background[data-scrolling="true"] .scroll-stare-face {
+    opacity: var(--scroll-stare-opacity, 0.08);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  .scroll-stare-face-one {
+    top: 12vh;
+    left: 7vw;
+    --scroll-stare-opacity: 0.095;
+  }
+
+  .scroll-stare-face-two {
+    top: 34vh;
+    right: 8vw;
+    width: clamp(10rem, 19vw, 19rem);
+    --scroll-stare-opacity: 0.07;
+  }
+
+  .scroll-stare-face-three {
+    bottom: 8vh;
+    left: 42vw;
+    width: clamp(7rem, 13vw, 13rem);
+    --scroll-stare-opacity: 0.055;
+  }
 }
 
 @keyframes dirty-ticker-scroll {
@@ -171,6 +266,31 @@
   }
 
   .dirty-ticker-copy {
+    display: none;
+  }
+
+  .scroll-stare-background {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .scroll-stare-face {
+    width: 7.5rem;
+  }
+
+  .scroll-stare-face-one {
+    top: 18vh;
+    left: -1.5rem;
+  }
+
+  .scroll-stare-face-two {
+    top: 52vh;
+    right: -2.25rem;
+    width: 8.75rem;
+  }
+
+  .scroll-stare-face-three {
     display: none;
   }
 }

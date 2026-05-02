@@ -86,6 +86,8 @@ describe("public submission inserts", () => {
   });
 
   it("returns a generic public error when database inserts fail", async () => {
+    const consoleErrorCalls = [];
+    const originalConsoleError = console.error;
     const client = {
       from() {
         return {
@@ -107,17 +109,28 @@ describe("public submission inserts", () => {
       }
     };
 
-    const result = await createContactSubmission(client, {
-      attachmentUrl: "https://example.com/static",
-      canReadOnAir: true,
-      email: "caller@example.com",
-      message: "This is enough usable static for the intake desk.",
-      name: "Caller",
-      subject: "Signal",
-      submissionType: "Open Mic Rant"
-    });
+    console.error = (...args) => consoleErrorCalls.push(args);
 
-    assert.equal(result.ok, false);
-    assert.equal(result.errors.database, "Signal Control could not log that file.");
+    try {
+      const result = await createContactSubmission(client, {
+        attachmentUrl: "https://example.com/static",
+        canReadOnAir: true,
+        email: "caller@example.com",
+        message: "This is enough usable static for the intake desk.",
+        name: "Caller",
+        subject: "Signal",
+        submissionType: "Open Mic Rant"
+      });
+
+      assert.equal(result.ok, false);
+      assert.equal(result.errors.database, "Signal Control could not log that file.");
+      assert.equal(consoleErrorCalls.length, 1);
+      assert.equal(consoleErrorCalls[0][0], "Contact submission insert failed");
+      assert.deepEqual(consoleErrorCalls[0][1], {
+        message: "relation contact_submissions leaked detail"
+      });
+    } finally {
+      console.error = originalConsoleError;
+    }
   });
 });
