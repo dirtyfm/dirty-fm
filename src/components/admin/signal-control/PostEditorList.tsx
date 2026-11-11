@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SignalControlForm } from "./SignalControlForms";
 import { postSubmissionCategories } from "@/lib/contentValidation";
 import type { AdminDashboardPost } from "@/lib/db/adminDashboard";
+import { getLegacyAttachmentUrl } from "@/lib/videoAttachments";
 import { adminFieldBase } from "./shared";
 
 export function PostEditorList({ posts }: { posts: AdminDashboardPost[] }) {
@@ -75,6 +76,15 @@ export function PostEditorList({ posts }: { posts: AdminDashboardPost[] }) {
             </div>
             <textarea aria-label="Body" className={adminFieldBase} defaultValue={post.body} name="body" rows={4} required />
             <input aria-label="Excerpt override" className={adminFieldBase} defaultValue={post.excerpt} name="excerpt" placeholder="Excerpt override" />
+            <label className="grid gap-1">
+              <span className="font-utility text-xs font-black uppercase text-dirty-yellow">Source URL</span>
+              <input
+                className={adminFieldBase}
+                defaultValue={post.review_source_url === undefined ? getLegacyAttachmentUrl(post.body) : post.review_source_url ?? ""}
+                name="source_url"
+                type="url"
+              />
+            </label>
             <div className="flex flex-wrap gap-2">
               <button className="button button-secondary" type="submit">Save Post</button>
               {post.status === "published" && post.published_at && Date.parse(post.published_at) <= Date.now() ? (

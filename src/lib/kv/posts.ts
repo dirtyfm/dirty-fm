@@ -3,6 +3,7 @@ import { validatePostSubmission, type PostSubmissionInput } from "../contentVali
 import type { PostSubmissionStatus } from "../db/types.ts";
 import { SignalControlFormError } from "../signalControlFeedback.ts";
 import { cleanAdminNotes, createDirtyNewsExcerpt, createDirtyNewsSlug, isPendingPostReview } from "../submissionWorkflows.ts";
+import { parseAttachmentUrl } from "../videoAttachments.ts";
 import { getDirtyfmKvNamespace, listJsonRecords, writeJsonKey, deleteJsonKey } from "./store.ts";
 import type { KvDirtyNewsPost, KvPostFile, KvPostStatus, KvPostSubmission } from "./types.ts";
 import { byPublishedDesc, readMany, removeFromIndex } from "./indexes.ts";
@@ -46,6 +47,7 @@ function postToPublic(post: KvDirtyNewsPost): DirtyNewsPost {
     id: post.id,
     publishedAt: post.published_at ?? new Date(0).toISOString(),
     slug: post.slug,
+    sourceUrl: post.review_source_url,
     status: "published",
     title: post.title
   };
@@ -172,6 +174,12 @@ export async function upsertKvPost(formData: FormData) {
   if (slug !== existing?.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     throw new SignalControlFormError("Use lowercase letters, numbers, and single hyphens in the post URL.");
   }
+  const sourceField = formData.get("source_url");
+  const sourceUrl = typeof sourceField === "string" ? sourceField.trim() : undefined;
+  const attachment = parseAttachmentUrl(sourceUrl);
+  if (sourceUrl && !attachment) {
+    throw new SignalControlFormError("Paste a valid source URL or leave it blank.");
+  }
   const post: KvDirtyNewsPost = {
     ...existing,
     author: String(formData.get("author") ?? existing?.author ?? "DirtyFM Desk").trim(),
@@ -183,6 +191,7 @@ export async function upsertKvPost(formData: FormData) {
     id,
     published_at:
       status === "published" ? date ? new Date(date).toISOString() : timestamp : null,
+    review_source_url: sourceUrl === undefined ? existing?.review_source_url : attachment?.href ?? null,
     slug,
     status,
     title,

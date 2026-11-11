@@ -22,6 +22,7 @@ export type DirtyNewsPost = {
   category: string;
   author: string | null;
   featuredImageUrl?: string;
+  sourceUrl?: string | null;
   publishedAt: string;
   status: PostStatus;
   archive?: {

@@ -12,6 +12,7 @@ import { keyFor, keys } from "./kv/keys.ts";
 import { getValidatedDirtyfmContentBackend } from "./runtimeConfigCore.ts";
 import { getKvAdminDashboardData } from "./kv/dashboard.ts";
 import { deleteKvPost, getKvPublicPosts, publishKvPostSubmission, upsertKvPost } from "./kv/posts.ts";
+import { getPublishedVideoAttachments, getVideoSource, withVideoAttachmentFooter } from "./videoAttachments.ts";
 
 const envKeys = [
   "CLOUDFLARE_ACCOUNT_ID",
@@ -108,6 +109,73 @@ describe("active public safety path smoke tests", () => {
   });
 
   const reviewInput = { ...validDirtyNewsSubmission, author: "DirtyFM Desk" };
+
+  it("plays a submitted contact clip only while its reviewed post is public", async () => {
+    const contact = await createKvContactSubmission({
+      ...validContactSubmission,
+      attachmentUrl: "https://youtu.be/M7lc1UVf-VE",
+      submissionType: "Video Clip"
+    });
+    const { submission } = await convertKvContactToPostSubmission(contact.data.id, "Video Drops");
+    const input = {
+      ...reviewInput,
+      body: submission.body,
+      category: submission.category,
+      sourceUrl: submission.source_url,
+      title: submission.title
+    };
+    const { post } = await publishKvPostSubmission(submission.id, "draft", input, "operator");
+    assert.deepEqual(getPublishedVideoAttachments(await getKvPublicPosts(), []), []);
+
+    const form = new FormData();
+    form.set("id", post.id);
+    form.set("status", "published");
+    await upsertKvPost(form);
+    const [clip] = getPublishedVideoAttachments(await getKvPublicPosts(), []);
+    assert.equal(clip.title, submission.title);
+    assert.equal(clip.source.src, "https://www.youtube.com/embed/M7lc1UVf-VE");
+
+    form.set("source_url", "");
+    await upsertKvPost(form);
+    assert.deepEqual(getPublishedVideoAttachments(await getKvPublicPosts(), []), []);
+  });
+
+  it("deduplicates legacy attachment links and excludes scheduled clips", async () => {
+    const legacy = kvPost({
+      body: "Article body.\n\nAttachment/source wire: https://www.youtube.com/shorts/dQw4w9WgXcQ"
+    });
+    const duplicate = kvPost({ review_source_url: "https://youtu.be/dQw4w9WgXcQ" });
+    const scheduled = kvPost({ review_source_url: "https://vimeo.com/76979871", published_at: "2099-01-01T00:00:00Z" });
+    for (const post of [legacy, duplicate, scheduled]) await writeJsonKey(keyFor("posts", post.id), post);
+    await writeJsonKey(keys.postsIndex, [legacy.id, duplicate.id, scheduled.id]);
+
+    const published = await getKvPublicPosts();
+    const clips = getPublishedVideoAttachments(published, []);
+    assert.equal(clips.length, 1);
+    assert.equal(clips[0].source.key, "youtube:dQw4w9WgXcQ");
+    assert.deepEqual(getPublishedVideoAttachments(published, clips), []);
+  });
+
+  it("builds playable sources for supported URLs and rejects arbitrary embeds", () => {
+    assert.equal(getVideoSource("https://www.youtube.com/live/M7lc1UVf-VE")?.key, "youtube:M7lc1UVf-VE");
+    assert.equal(getVideoSource("https://vimeo.com/76979871/a5e2f0")?.src, "https://player.vimeo.com/video/76979871?h=a5e2f0");
+    const file = "https://files.example.com/clip.MP4?signature=abc";
+    assert.equal(getVideoSource(file)?.src, file);
+    assert.equal(getVideoSource(file)?.kind, "file");
+    for (const url of [
+      "https://www.youtube.com.evil.example/watch?v=M7lc1UVf-VE",
+      "https://www.youtube.com/playlist?list=abc",
+      "https://vimeo.com/account",
+      "https://user:pass@files.example.com/clip.mp4",
+      "http://files.example.com/clip.mp4",
+      "javascript:alert(1)"
+    ]) assert.equal(getVideoSource(url), null);
+
+    const body = "A public article with an attached clip.";
+    const withVideo = withVideoAttachmentFooter(body, file);
+    assert.match(withVideo, /Attachment\/source wire: https:\/\/files\.example\.com/);
+    assert.equal(withVideoAttachmentFooter(withVideo), body);
+  });
 
   it("moves reviewed submissions out of Pending and keeps one post after retries", async () => {
     const submission = await createKvPostSubmission(validDirtyNewsSubmission);

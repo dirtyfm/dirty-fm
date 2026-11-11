@@ -15,10 +15,7 @@ import {
   getArchivedDirtyTvHomePreviewCards
 } from "@/data/dirtyTvArchivedPosts";
 import { formatPostDate } from "@/data/posts";
-import {
-  formatVideoDate,
-  getYoutubeThumbnailUrl
-} from "@/data/videos";
+import { formatVideoDate } from "@/data/videos";
 import { getPublicDirtyNewsPosts } from "@/lib/db/posts";
 import { getPublicFeaturedVideo, getPublicVideos } from "@/lib/db/videos";
 import { getKvHomeSettings } from "@/lib/kv/contentStore";
@@ -235,11 +232,11 @@ export default async function Home() {
             {currentVideos.map((video) => (
               <VideoTrashCard
                 category={video.category}
-                href={`/dirty-tv?category=${encodeURIComponent(video.category)}`}
+                href={`/dirty-tv?clip=${encodeURIComponent(video.id)}`}
                 key={video.id}
                 runtime={`${video.host} / ${formatVideoDate(video.publishedAt)}`}
                 status={video.status}
-                thumbnailUrl={getYoutubeThumbnailUrl(video.youtubeId)}
+                thumbnailUrl={video.source.thumbnailUrl}
                 title={video.title}
               />
             ))}

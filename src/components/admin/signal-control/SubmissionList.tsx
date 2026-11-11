@@ -1,6 +1,7 @@
 import { postSubmissionCategories } from "@/lib/contentValidation";
 import type { AdminDashboardPostSubmission } from "@/lib/db/adminDashboard";
 import { postSubmissionStatuses } from "@/lib/submissionWorkflows";
+import { parseAttachmentUrl } from "@/lib/videoAttachments";
 import { EmptyWire } from "./EmptyWire";
 import { SignalControlForm } from "./SignalControlForms";
 import { adminFieldBase, excerpt, formatDate } from "./shared";
@@ -12,8 +13,9 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
 
   return (
     <div className="grid gap-3">
-      {submissions.map((submission) => (
-        <article className="archive-card" key={submission.id}>
+      {submissions.map((submission) => {
+        const source = parseAttachmentUrl(submission.source_url);
+        return <article className="archive-card" key={submission.id}>
           <p className="card-label">{submission.category}</p>
           <h3 className="mt-2 font-display text-3xl font-black uppercase leading-none text-dirty-ash">
             {submission.title}
@@ -22,8 +24,8 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
             {submission.name} / {submission.email} / {formatDate(submission.created_at)}
           </p>
           <p className="mt-3 text-dirty-ash">{excerpt(submission.body)}</p>
-          {submission.source_url ? (
-            <a className="mt-3 inline-block font-utility text-xs font-bold uppercase" href={submission.source_url}>
+          {source ? (
+            <a className="mt-3 inline-block font-utility text-xs font-bold uppercase" href={source.href} rel="noreferrer" target="_blank">
               Source Wire
             </a>
           ) : null}
@@ -74,7 +76,8 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
                 <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
                   Source URL
                 </span>
-                <input className={adminFieldBase} defaultValue={submission.source_url ?? ""} name="source_url" />
+                <input className={adminFieldBase} defaultValue={submission.source_url ?? ""} name="source_url" type="url" />
+                <span className="text-sm text-dirty-gray">YouTube, Vimeo, and direct video files go to Video Trash when you publish.</span>
               </label>
               <label className="grid gap-1">
                 <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
@@ -115,8 +118,8 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
               Delete if Needed
             </button>
           </SignalControlForm>
-        </article>
-      ))}
+        </article>;
+      })}
     </div>
   );
 }

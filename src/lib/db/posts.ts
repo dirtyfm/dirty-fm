@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { getPublishedPosts, type DirtyNewsPost } from "../../data/posts.ts";
 import { mapVisiblePublicComments, type PublicDirtyNewsComment } from "./commentMapping.ts";
 import { createSupabaseServerClient } from "./supabase.ts";
@@ -55,7 +56,7 @@ function mapDbPost(post: DbPost): DirtyNewsPost {
   };
 }
 
-export async function getPublicDirtyNewsPosts() {
+export const getPublicDirtyNewsPosts = cache(async () => {
   const fallbackPosts = getPublishedPosts();
 
   if (isKvContentBackend()) {
@@ -81,7 +82,7 @@ export async function getPublicDirtyNewsPosts() {
 
   const dbPosts = (data as DbPost[]).map(mapDbPost);
   return mergePublicDirtyNewsPosts(dbPosts, fallbackPosts);
-}
+});
 
 export async function getVisibleCommentsForPost(
   postId: string

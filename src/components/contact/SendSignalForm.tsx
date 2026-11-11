@@ -355,6 +355,9 @@ export function SendSignalForm() {
             value={values.attachmentUrl}
           />
           <FieldError message={errors.attachmentUrl} />
+          {values.submissionType === "Video Clip" ? (
+            <span className="text-sm text-dirty-gray">Paste a YouTube or Vimeo link, or a direct HTTPS video file URL.</span>
+          ) : null}
         </label>
 
         <div className="flex flex-col gap-3 border-t border-[rgba(183,178,168,0.24)] pt-5 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">

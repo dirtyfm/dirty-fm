@@ -34,6 +34,7 @@ import {
   isPendingPostReview,
   isPostSubmissionStatus
 } from "@/lib/submissionWorkflows";
+import { getVideoSource, withVideoAttachmentFooter } from "@/lib/videoAttachments";
 
 function throwAdminMutationError(label: string, error: unknown): never {
   console.error(label, error);
@@ -291,7 +292,7 @@ async function publishPostSubmission(intent: "draft" | "publish", formData: Form
       profile.user_id
     );
     revalidateNews();
-    return postFeedback(result.post, result.alreadyReviewed);
+    return postFeedback(result.post, result.alreadyReviewed, result.post?.review_source_url);
   }
 
   if (!supabase) {
@@ -312,7 +313,7 @@ async function publishPostSubmission(intent: "draft" | "publish", formData: Form
   const publishedAt = postStatus === "published" ? new Date().toISOString() : null;
   const { error: postError } = await supabase.from("posts").upsert({
     author,
-    body: validated.data.body,
+    body: withVideoAttachmentFooter(validated.data.body, validated.data.sourceUrl),
     category: validated.data.category,
     created_by: profile.user_id,
     excerpt,
@@ -353,7 +354,7 @@ async function publishPostSubmission(intent: "draft" | "publish", formData: Form
   }
 
   revalidateNews();
-  return postFeedback(post, post.status !== postStatus);
+  return postFeedback(post, post.status !== postStatus, validated.data.sourceUrl);
 }
 
 async function deletePostSubmission(formData: FormData) {
@@ -505,7 +506,7 @@ async function savePost(formData: FormData) {
   await getAdminContext();
   const post = await upsertKvPost(formData);
   revalidateNews();
-  return postFeedback(post, false);
+  return postFeedback(post, false, post.review_source_url);
 }
 
 async function deletePost(formData: FormData) {
@@ -534,16 +535,22 @@ function revalidateNews() {
   revalidatePath("/");
   revalidatePath("/dirty-news");
   revalidatePath("/dirty-news/[slug]", "page");
+  revalidatePath("/dirty-tv");
   revalidatePath("/signal-control");
 }
 
-function postFeedback(post: Pick<KvDirtyNewsPost, "id" | "status" | "slug" | "published_at"> | null, alreadyReviewed: boolean): SignalControlFeedback {
+function postFeedback(
+  post: Pick<KvDirtyNewsPost, "id" | "status" | "slug" | "published_at"> | null,
+  alreadyReviewed: boolean,
+  sourceUrl?: string | null
+): SignalControlFeedback {
   if (!post) {
     return { message: "This submission has already been reviewed.", href: "#review-history", linkLabel: "Open Review History" };
   }
   if (post.status === "published" && post.published_at && Date.parse(post.published_at) <= Date.now()) {
+    const message = alreadyReviewed ? "Already published. The existing post is still live." : "Published to Dirty News.";
     return {
-      message: alreadyReviewed ? "Already published. The existing post is still live." : "Published to Dirty News.",
+      message: getVideoSource(sourceUrl) ? `${message} Clip filed in Video Trash.` : message,
       href: `/dirty-news/${encodeURIComponent(post.slug)}`,
       linkLabel: "View public post"
     };
