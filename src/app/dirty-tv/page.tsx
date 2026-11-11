@@ -16,6 +16,7 @@ import {
 type DirtyTVPageProps = {
   searchParams?: Promise<{
     category?: string;
+    clip?: string;
   }>;
 };
 
@@ -36,6 +37,7 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
   const featuredVideo = selectedCategory
     ? videos[0] ?? await getPublicFeaturedVideo()
     : await getPublicFeaturedVideo();
+  const initialVideo = videos.find((video) => video.id === params?.clip) ?? featuredVideo;
   const posts = getArchivedDirtyTvPosts();
   const archivedVideoCount = posts.reduce((count, post) => count + post.videos.length, 0);
 
@@ -88,7 +90,8 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
       </section>
 
       <DirtyTVPlayer
-        featuredVideo={featuredVideo}
+        featuredVideo={initialVideo}
+        key={`${selectedCategory ?? ""}:${initialVideo?.id ?? ""}`}
         selectedCategory={selectedCategory}
         videos={videos}
       />

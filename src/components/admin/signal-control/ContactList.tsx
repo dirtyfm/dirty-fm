@@ -1,6 +1,7 @@
 import { postSubmissionCategories } from "@/lib/contentValidation";
 import type { AdminDashboardContact } from "@/lib/db/adminDashboard";
 import { contactSubmissionStatuses } from "@/lib/submissionWorkflows";
+import { getVideoSource, parseAttachmentUrl } from "@/lib/videoAttachments";
 import { EmptyWire } from "./EmptyWire";
 import { SignalControlForm } from "./SignalControlForms";
 import { adminFieldBase, excerpt, formatDate } from "./shared";
@@ -12,8 +13,10 @@ export function ContactList({ contacts }: { contacts: AdminDashboardContact[] })
 
   return (
     <div className="grid gap-3">
-      {contacts.map((contact) => (
-        <article className="archive-card" key={contact.id}>
+      {contacts.map((contact) => {
+        const attachment = parseAttachmentUrl(contact.attachment_url);
+        const video = getVideoSource(contact.attachment_url);
+        return <article className="archive-card" key={contact.id}>
           <div className="flex flex-col gap-2 min-[760px]:flex-row min-[760px]:items-start min-[760px]:justify-between">
             <div>
               <p className="card-label">{contact.submission_type}</p>
@@ -30,6 +33,11 @@ export function ContactList({ contacts }: { contacts: AdminDashboardContact[] })
             {contact.can_read_on_air ? "yes" : "no"}
           </p>
           <p className="mt-3 text-dirty-ash">{excerpt(contact.message)}</p>
+          {attachment ? (
+            <a className="mt-3 inline-block font-utility text-xs font-bold uppercase" href={attachment.href} rel="noreferrer" target="_blank">
+              {video ? `Open ${video.label} attachment` : "Open attachment"}
+            </a>
+          ) : null}
           {contact.reviewStatus ? (
             <p className="mt-3 text-dirty-yellow">Dirty News review file · {contact.reviewStatus}</p>
           ) : <SignalControlForm operation="convert-signal" className="mt-4 grid gap-3 border-t border-[rgba(214,184,74,0.3)] pt-4">
@@ -94,8 +102,8 @@ export function ContactList({ contacts }: { contacts: AdminDashboardContact[] })
               Delete if Needed
             </button>
           </SignalControlForm>
-        </article>
-      ))}
+        </article>;
+      })}
     </div>
   );
 }

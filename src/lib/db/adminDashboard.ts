@@ -14,6 +14,7 @@ export type AdminDashboardContact = Pick<
   | "email"
   | "subject"
   | "submission_type"
+  | "attachment_url"
   | "message"
   | "status"
   | "admin_notes"
@@ -48,7 +49,7 @@ export type AdminDashboardPost = Pick<
   | "slug"
   | "status"
   | "title"
->;
+> & { review_source_url?: string | null };
 
 export type AdminDashboardComment = Pick<
   Database["public"]["Tables"]["comments"]["Row"],
@@ -127,7 +128,7 @@ export async function getAdminDashboardData(
     supabase
       .from("contact_submissions")
       .select(
-        "id, name, email, subject, submission_type, message, status, admin_notes, can_read_on_air, created_at"
+        "id, name, email, subject, submission_type, message, attachment_url, status, admin_notes, can_read_on_air, created_at"
       )
       .order("created_at", { ascending: false })
       .limit(8),

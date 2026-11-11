@@ -1,21 +1,17 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { DirtyVideo } from "@/data/videos";
-import {
-  formatVideoDate,
-  getYoutubeEmbedUrl,
-  getYoutubeThumbnailUrl
-} from "@/data/videos";
+import { formatVideoDate } from "@/data/videos";
+import type { PublicVideo } from "@/lib/videoAttachments";
 import { DirtyButton } from "./DirtyButton";
 import { SectionStamp } from "./SectionStamp";
 import { StaticPanel } from "./StaticPanel";
 import { VideoTrashCard } from "./VideoTrashCard";
 
 export type DirtyTVPlayerProps = {
-  featuredVideo: DirtyVideo | null;
+  featuredVideo: PublicVideo | null;
   selectedCategory?: string;
-  videos: DirtyVideo[];
+  videos: PublicVideo[];
 };
 
 export function DirtyTVPlayer({
@@ -29,7 +25,7 @@ export function DirtyTVPlayer({
   const selectedVideo =
     videos.find((video) => video.id === selectedVideoId) ?? firstVideo;
 
-  function playVideo(video: DirtyVideo) {
+  function playVideo(video: PublicVideo) {
     setSelectedVideoId(video.id);
     window.requestAnimationFrame(() => {
       playerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -73,15 +69,27 @@ export function DirtyTVPlayer({
                 className="pointer-events-none absolute inset-0 z-10 bg-[repeating-linear-gradient(0deg,rgba(183,178,168,0.08)_0,rgba(183,178,168,0.08)_1px,transparent_1px,transparent_6px)] opacity-25"
                 aria-hidden="true"
               />
-              <iframe
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="absolute inset-0 h-full w-full"
-                loading="lazy"
-                referrerPolicy="strict-origin-when-cross-origin"
-                src={getYoutubeEmbedUrl(selectedVideo.youtubeId)}
-                title={selectedVideo.title}
-              />
+              {selectedVideo.source.kind === "file" ? (
+                <video
+                  aria-label={selectedVideo.title}
+                  className="absolute inset-0 h-full w-full"
+                  controls
+                  key={selectedVideo.id}
+                  playsInline
+                  preload="none"
+                  src={selectedVideo.source.src}
+                />
+              ) : (
+                <iframe
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  src={selectedVideo.source.src}
+                  title={selectedVideo.title}
+                />
+              )}
             </div>
             <div className="grid gap-4 p-5 min-[760px]:grid-cols-[minmax(0,1fr)_18rem] min-[760px]:p-6">
               <div className="grid gap-3">
@@ -96,17 +104,17 @@ export function DirtyTVPlayer({
                 </p>
               </div>
               <div className="grid content-start gap-2 border border-dirty-yellow bg-dirty-black/35 p-4 font-utility text-xs font-black uppercase text-dirty-yellow">
-                <span>File Type: YouTube Embed</span>
+                <span>File Type: {selectedVideo.source.label}</span>
                 <span>Signal: In-Page Playback</span>
                 <span>Channel: Dirty TV</span>
                 <span>Archive ID: {selectedVideo.id}</span>
                 <a
                   className="text-dirty-blue underline decoration-dirty-red decoration-2 underline-offset-4 hover:text-dirty-yellow"
-                  href={`https://www.youtube.com/watch?v=${selectedVideo.youtubeId}`}
+                  href={selectedVideo.source.watchUrl}
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Emergency YouTube Exit
+                  Open Original Video
                 </a>
               </div>
             </div>
@@ -137,7 +145,7 @@ export function DirtyTVPlayer({
                 onPlay={() => playVideo(video)}
                 runtime={`${video.host} / ${formatVideoDate(video.publishedAt)}`}
                 status={video.status}
-                thumbnailUrl={getYoutubeThumbnailUrl(video.youtubeId)}
+                thumbnailUrl={video.source.thumbnailUrl}
                 title={video.title}
               />
             ))}
