@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { HTMLAttributeAnchorTarget, MouseEventHandler, ReactNode } from "react";
+import type { AriaAttributes, HTMLAttributeAnchorTarget, MouseEventHandler, ReactNode } from "react";
 import { cx } from "./shared";
 
 export type DirtyButtonProps = {
@@ -15,6 +15,7 @@ export type DirtyButtonProps = {
   disabled?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   "aria-label"?: string;
+  "aria-current"?: AriaAttributes["aria-current"];
 };
 
 const variantClasses = {
@@ -53,6 +54,7 @@ export function DirtyButton(props: DirtyButtonProps) {
   if (href) {
     return (
       <Link
+        aria-current={props["aria-current"]}
         aria-label={ariaLabel}
         className={classes}
         href={href}

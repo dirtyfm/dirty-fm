@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import {
   getFeaturedVideo as getStaticFeaturedVideo,
   getVideoCategories as getStaticVideoCategories,
@@ -8,13 +9,13 @@ import {
 import { isKvContentBackend } from "@/lib/contentBackend";
 import { getKvVideos } from "@/lib/kv/contentStore";
 
-export async function getPublicVideos() {
+export const getPublicVideos = cache(async () => {
   if (isKvContentBackend()) {
     return getKvVideos();
   }
 
   return getStaticVideos();
-}
+});
 
 export async function getPublicFeaturedVideo() {
   const videos = await getPublicVideos();

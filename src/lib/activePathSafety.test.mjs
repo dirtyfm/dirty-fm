@@ -4,12 +4,14 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { getPublishedPosts } from "../data/posts.ts";
 import { createKvComment, getKvVisibleCommentsForPost } from "./kv/comments.ts";
-import { createKvContactSubmission } from "./kv/contactSubmissions.ts";
+import { convertKvContactToPostSubmission, createKvContactSubmission } from "./kv/contactSubmissions.ts";
 import { createKvPostSubmission } from "./kv/postSubmissions.ts";
 import { mergePublicDirtyNewsPosts } from "./db/publicPostsCore.ts";
 import { __test, readJsonKey, writeJsonKey } from "./kv/store.ts";
 import { keyFor, keys } from "./kv/keys.ts";
 import { getValidatedDirtyfmContentBackend } from "./runtimeConfigCore.ts";
+import { getKvAdminDashboardData } from "./kv/dashboard.ts";
+import { deleteKvPost, getKvPublicPosts, publishKvPostSubmission, upsertKvPost } from "./kv/posts.ts";
 
 const envKeys = [
   "CLOUDFLARE_ACCOUNT_ID",
@@ -103,6 +105,105 @@ describe("active public safety path smoke tests", () => {
   afterEach(() => {
     __test.resetMemoryKv();
     restoreEnv();
+  });
+
+  const reviewInput = { ...validDirtyNewsSubmission, author: "DirtyFM Desk" };
+
+  it("moves reviewed submissions out of Pending and keeps one post after retries", async () => {
+    const submission = await createKvPostSubmission(validDirtyNewsSubmission);
+    const id = submission.data.id;
+    await Promise.all([
+      publishKvPostSubmission(id, "publish", reviewInput, "operator"),
+      publishKvPostSubmission(id, "publish", reviewInput, "operator"),
+      publishKvPostSubmission(id, "draft", reviewInput, "operator")
+    ]);
+
+    const retry = await publishKvPostSubmission(id, "publish", reviewInput, "operator");
+    const dashboard = await getKvAdminDashboardData();
+    assert.equal(retry.alreadyReviewed, true);
+    assert.equal(dashboard.postSubmissions.length, 0);
+    assert.equal(dashboard.reviewedSubmissions[0].status, "published");
+    assert.equal(dashboard.reviewedSubmissions[0].postId, retry.post.id);
+    assert.equal(dashboard.posts.length, 1);
+    assert.equal((await getKvPublicPosts()).length, 1);
+  });
+
+  it("keeps different same-title submissions separate and does not overwrite their inventory", async () => {
+    const first = await createKvPostSubmission(validDirtyNewsSubmission);
+    const second = await createKvPostSubmission(validDirtyNewsSubmission);
+    await Promise.all([first, second].map((item) =>
+      publishKvPostSubmission(item.data.id, "publish", reviewInput, "operator")
+    ));
+    const posts = await getKvPublicPosts();
+    assert.equal(posts.length, 2);
+    assert.equal(new Set(posts.map((post) => post.slug)).size, 2);
+  });
+
+  it("promotes a saved draft, preserves its identity, and blocks stale republishing after deletion", async () => {
+    const submission = await createKvPostSubmission(validDirtyNewsSubmission);
+    const id = submission.data.id;
+    const { post } = await publishKvPostSubmission(id, "draft", reviewInput, "operator");
+    assert.equal((await getKvAdminDashboardData()).reviewedSubmissions[0].status, "draft");
+    assert.deepEqual(await getKvPublicPosts(), []);
+
+    const form = new FormData();
+    form.set("id", post.id);
+    form.set("status", "published");
+    await upsertKvPost(form);
+    assert.equal((await getKvPublicPosts())[0].id, post.id);
+    assert.equal((await getKvPublicPosts())[0].slug, post.slug);
+
+    form.set("status", "archived");
+    await upsertKvPost(form);
+    assert.deepEqual(await getKvPublicPosts(), []);
+    await deleteKvPost(post.id);
+    const retry = await publishKvPostSubmission(id, "publish", reviewInput, "operator");
+    assert.equal(retry.alreadyReviewed, true);
+    assert.equal(retry.post, null);
+    assert.equal((await getKvAdminDashboardData()).reviewedSubmissions[0].status, "archived");
+    assert.deepEqual(await getKvPublicPosts(), []);
+  });
+
+  it("uses one request ID when a new post from Live Files is submitted twice", async () => {
+    const form = new FormData();
+    form.set("request_id", `file-${crypto.randomUUID()}`);
+    form.set("title", reviewInput.title);
+    form.set("body", reviewInput.body);
+    form.set("status", "published");
+    const [first, second] = await Promise.all([upsertKvPost(form), upsertKvPost(form)]);
+    assert.equal(first.id, second.id);
+    assert.equal((await getKvPublicPosts()).length, 1);
+  });
+
+  it("keeps a legacy processed submission out of the queue and never republishes it", async () => {
+    const submission = await createKvPostSubmission(validDirtyNewsSubmission);
+    const key = keyFor("post-submissions", submission.data.id);
+    const original = await readJsonKey(key, null);
+    await writeJsonKey(key, { ...original, status: "published" });
+    await publishKvPostSubmission(submission.data.id, "publish", reviewInput, "operator");
+    assert.deepEqual(await getKvPublicPosts(), []);
+    const dashboard = await getKvAdminDashboardData();
+    assert.deepEqual(dashboard.postSubmissions, []);
+    assert.equal(dashboard.reviewedSubmissions[0].status, "published");
+  });
+
+  it("converts an incoming signal into one review file even when requested twice", async () => {
+    const contact = await createKvContactSubmission(validContactSubmission);
+    const [first, second] = await Promise.all([
+      convertKvContactToPostSubmission(contact.data.id, "Open Mic"),
+      convertKvContactToPostSubmission(contact.data.id, "Open Mic")
+    ]);
+    assert.equal(first.submission.id, second.submission.id);
+    const dashboard = await getKvAdminDashboardData();
+    assert.equal(dashboard.postSubmissions.length, 1);
+    assert.equal(dashboard.contacts[0].reviewStatus, "pending");
+    assert.equal(dashboard.counts.contactSubmissions, 0);
+  });
+
+  it("shows only the canonical card when legacy posts share a public URL", () => {
+    const older = { ...getPublishedPosts()[0], id: "legacy-duplicate" };
+    const current = { ...older, id: "legacy-current" };
+    assert.deepEqual(mergePublicDirtyNewsPosts([current, older], [older]), [current]);
   });
 
   it("creates Dirty News public submissions as pending KV submissions, not published posts", async () => {

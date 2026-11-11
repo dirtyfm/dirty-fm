@@ -35,14 +35,12 @@ export default async function DirtyNewsPage({
   searchParams
 }: DirtyNewsPageProps) {
   const params = await searchParams;
-  const activeCategory = params?.category;
   const publishedPosts = await getPublicDirtyNewsPosts();
   const categories = getDirtyNewsCategoriesFromPosts(publishedPosts);
-  const posts = getPublishedPostsByCategoryFromPosts(
-    publishedPosts,
-    categories.includes(activeCategory ?? "") ? activeCategory : undefined
-  );
-  const featuredPost = publishedPosts[0] ?? null;
+  const activeCategory = categories.find((category) => category === params?.category);
+  const posts = getPublishedPostsByCategoryFromPosts(publishedPosts, activeCategory);
+  const featuredPost = posts[0] ?? null;
+  const archivePosts = posts.slice(1);
 
   return (
     <div className="grid gap-9 min-[760px]:gap-12">
@@ -74,6 +72,7 @@ export default async function DirtyNewsPage({
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 min-[760px]:mx-0 min-[760px]:flex-wrap min-[760px]:overflow-visible min-[760px]:px-0 min-[760px]:pb-0">
           <DirtyButton
+            aria-current={!activeCategory ? "page" : undefined}
             href="/dirty-news"
             variant={!activeCategory ? "primary" : "ghost"}
           >
@@ -81,6 +80,7 @@ export default async function DirtyNewsPage({
           </DirtyButton>
           {categories.map((category) => (
             <DirtyButton
+              aria-current={activeCategory === category ? "page" : undefined}
               href={`/dirty-news?category=${encodeURIComponent(category)}`}
               key={category}
               variant={activeCategory === category ? "primary" : "ghost"}
@@ -115,7 +115,7 @@ export default async function DirtyNewsPage({
         />
       ) : null}
 
-      <section className="grid gap-5">
+      {archivePosts.length > 0 || !featuredPost ? <section className="grid gap-5">
         <div className="flex flex-col gap-4 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
           <SectionStamp
             label={activeCategory ?? "Dirty Feed"}
@@ -127,9 +127,9 @@ export default async function DirtyNewsPage({
           </DirtyButton>
         </div>
 
-        {posts.length > 0 ? (
+        {archivePosts.length > 0 ? (
           <div className="grid gap-4 min-[860px]:grid-cols-3">
-            {posts.map((post, index) => (
+            {archivePosts.map((post, index) => (
               <DirtyNewsCard
                 category={post.category}
                 dateLabel={getPostDateLabel(post)}
@@ -154,15 +154,15 @@ export default async function DirtyNewsPage({
             </p>
           </StaticPanel>
         )}
-      </section>
+      </section> : null}
 
       <StaticPanel
         label="Dirty News Submission"
         title="Got a Rant, Clip, Complaint, or Bad Idea?"
         tone="red"
         footer={
-          <DirtyButton href="/contact" variant="secondary">
-            Send It In
+          <DirtyButton href="#submit-dirty-news" variant="secondary">
+            Open the Submission Form
           </DirtyButton>
         }
       >

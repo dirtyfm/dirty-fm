@@ -8,6 +8,8 @@ import { createDirtyNewsDraftFromContact } from "@/lib/contactToDirtyNews";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import { requireAdmin } from "@/lib/db/admin";
 import { validatePostSubmission } from "@/lib/contentValidation";
+import { SignalControlFormError, type SignalControlFeedback } from "@/lib/signalControlFeedback";
+import type { KvDirtyNewsPost } from "@/lib/kv/types";
 import {
   convertKvContactToPostSubmission,
   deleteKvComment,
@@ -29,6 +31,7 @@ import {
   createDirtyNewsExcerpt,
   createDirtyNewsSlug,
   isContactSubmissionStatus,
+  isPendingPostReview,
   isPostSubmissionStatus
 } from "@/lib/submissionWorkflows";
 
@@ -42,10 +45,12 @@ async function getAdminContext() {
   const accessToken = cookieStore.get(DIRTYFM_ACCESS_TOKEN_COOKIE)?.value;
 
   if (!accessToken) {
-    throw new Error("Signal Control session missing.");
+    throw new SignalControlFormError("Your session ended. Sign in to Signal Control and try again.");
   }
 
-  const profile = await requireAdmin(accessToken);
+  const profile = await requireAdmin(accessToken).catch(() => {
+    throw new SignalControlFormError("Your Signal Control session could not be verified. Sign in again.");
+  });
   // KV production keeps Supabase action code retained but inactive until the backend mode changes.
   const supabase = isKvContentBackend() ? null : createSupabaseServerClient(accessToken);
 
@@ -56,13 +61,13 @@ function getRequiredString(formData: FormData, name: string) {
   const value = formData.get(name);
 
   if (typeof value !== "string" || !value.trim()) {
-    throw new Error(`${name} is required.`);
+    throw new SignalControlFormError(`${name[0].toUpperCase()}${name.slice(1)} is required.`);
   }
 
   return value.trim();
 }
 
-export async function updateContactSubmission(formData: FormData) {
+async function updateContactSubmission(formData: FormData) {
   const { profile, supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
   const status = formData.get("status");
@@ -98,15 +103,20 @@ export async function updateContactSubmission(formData: FormData) {
   revalidatePath("/signal-control");
 }
 
-export async function convertContactToDirtyNewsSubmission(formData: FormData) {
+async function convertContactToDirtyNewsSubmission(formData: FormData): Promise<SignalControlFeedback> {
   const { profile, supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
   const category = formData.get("category");
 
   if (isKvContentBackend()) {
-    await convertKvContactToPostSubmission(id, category, profile.user_id);
+    const { submission, alreadyConverted } = await convertKvContactToPostSubmission(id, category);
     revalidatePath("/signal-control");
-    return;
+    const pending = isPendingPostReview(submission.status);
+    return {
+      message: alreadyConverted ? "This signal already has a Dirty News review file." : "Signal copied to Pending Dirty News.",
+      href: pending ? "#pending-dirty-news" : "#review-history",
+      linkLabel: pending ? "Open pending queue" : "Open Review History"
+    };
   }
 
   if (!supabase) {
@@ -127,7 +137,7 @@ export async function convertContactToDirtyNewsSubmission(formData: FormData) {
   const validated = validatePostSubmission(draft);
 
   if (!validated.ok) {
-    throw new Error(Object.values(validated.errors).join(" "));
+    throw new SignalControlFormError(Object.values(validated.errors).join(" "));
   }
 
   const { error: submissionError } = await supabase.from("post_submissions").insert({
@@ -159,9 +169,10 @@ export async function convertContactToDirtyNewsSubmission(formData: FormData) {
   }
 
   revalidatePath("/signal-control");
+  return { message: "Signal copied to Pending Dirty News.", href: "#pending-dirty-news", linkLabel: "Open pending queue" };
 }
 
-export async function deleteContactSubmission(formData: FormData) {
+async function deleteContactSubmission(formData: FormData) {
   const { supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
 
@@ -184,13 +195,13 @@ export async function deleteContactSubmission(formData: FormData) {
   revalidatePath("/signal-control");
 }
 
-export async function updatePostSubmission(formData: FormData) {
+async function updatePostSubmission(formData: FormData) {
   const { profile, supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
   const status = formData.get("status");
 
-  if (!isPostSubmissionStatus(status)) {
-    throw new Error("Invalid Dirty News submission status.");
+  if (!isPostSubmissionStatus(status) || status === "draft" || status === "published") {
+    throw new SignalControlFormError("Use the review buttons to create a draft or publish a file.");
   }
 
   const input = {
@@ -220,7 +231,7 @@ export async function updatePostSubmission(formData: FormData) {
   const validated = validatePostSubmission(input);
 
   if (!validated.ok) {
-    throw new Error(Object.values(validated.errors).join(" "));
+    throw new SignalControlFormError(Object.values(validated.errors).join(" "));
   }
 
   const { error } = await supabase
@@ -237,7 +248,10 @@ export async function updatePostSubmission(formData: FormData) {
       status,
       title: validated.data.title
     })
-    .eq("id", id);
+    .eq("id", id)
+    .in("status", ["pending", "approved"])
+    .select("id")
+    .single();
 
   if (error) {
     throwAdminMutationError("Dirty News submission update failed", error);
@@ -246,14 +260,10 @@ export async function updatePostSubmission(formData: FormData) {
   revalidatePath("/signal-control");
 }
 
-export async function publishPostSubmission(intent: "draft" | "publish", formData: FormData) {
+async function publishPostSubmission(intent: "draft" | "publish", formData: FormData): Promise<SignalControlFeedback> {
   const { profile, supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
-  if (intent !== "draft" && intent !== "publish") {
-    throw new Error("Invalid Dirty News publication action.");
-  }
   const postStatus = intent === "publish" ? "published" : "draft";
-  const submissionStatus = intent === "publish" ? "published" : "draft";
   const author = getRequiredString(formData, "author").slice(0, 120);
   const excerpt = createDirtyNewsExcerpt(
     getRequiredString(formData, "body"),
@@ -269,7 +279,7 @@ export async function publishPostSubmission(intent: "draft" | "publish", formDat
   };
 
   if (isKvContentBackend()) {
-    await publishKvPostSubmission(
+    const result = await publishKvPostSubmission(
       id,
       intent,
       {
@@ -280,9 +290,8 @@ export async function publishPostSubmission(intent: "draft" | "publish", formDat
       },
       profile.user_id
     );
-    revalidatePath("/signal-control");
-    revalidatePath("/dirty-news");
-    return;
+    revalidateNews();
+    return postFeedback(result.post, result.alreadyReviewed);
   }
 
   if (!supabase) {
@@ -292,26 +301,35 @@ export async function publishPostSubmission(intent: "draft" | "publish", formDat
   const validated = validatePostSubmission(input);
 
   if (!validated.ok) {
-    throw new Error(Object.values(validated.errors).join(" "));
+    throw new SignalControlFormError(Object.values(validated.errors).join(" "));
   }
 
+  const { data: submission, error: readError } = await supabase.from("post_submissions")
+    .select("status").eq("id", id).single();
+  if (readError) throwAdminMutationError("Dirty News submission lookup failed", readError);
+  if (!isPendingPostReview(submission.status)) return postFeedback(null, true);
+
   const publishedAt = postStatus === "published" ? new Date().toISOString() : null;
-  const { error: postError } = await supabase.from("posts").insert({
+  const { error: postError } = await supabase.from("posts").upsert({
     author,
     body: validated.data.body,
     category: validated.data.category,
     created_by: profile.user_id,
     excerpt,
+    id,
     published_at: publishedAt,
-    slug: createDirtyNewsSlug(validated.data.title, id),
+    slug: createDirtyNewsSlug(validated.data.title, id, id.length),
     status: postStatus,
     title: validated.data.title,
     updated_by: profile.user_id
-  });
+  }, { onConflict: "id", ignoreDuplicates: true });
 
   if (postError) {
     throwAdminMutationError("Post creation failed", postError);
   }
+  const { data: post, error: lookupError } = await supabase.from("posts")
+    .select("id, status, slug, published_at").eq("id", id).single();
+  if (lookupError) throwAdminMutationError("Dirty News post lookup failed", lookupError);
 
   const { error: submissionError } = await supabase
     .from("post_submissions")
@@ -324,20 +342,21 @@ export async function publishPostSubmission(intent: "draft" | "publish", formDat
       reviewed_at: new Date().toISOString(),
       reviewed_by: profile.user_id,
       source_url: validated.data.sourceUrl ?? null,
-      status: submissionStatus,
+      status: post.status,
       title: validated.data.title
     })
-    .eq("id", id);
+    .eq("id", id)
+    .in("status", ["pending", "approved"]);
 
   if (submissionError) {
     throwAdminMutationError("Submission status update failed", submissionError);
   }
 
-  revalidatePath("/signal-control");
-  revalidatePath("/dirty-news");
+  revalidateNews();
+  return postFeedback(post, post.status !== postStatus);
 }
 
-export async function deletePostSubmission(formData: FormData) {
+async function deletePostSubmission(formData: FormData) {
   const { supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
 
@@ -390,7 +409,7 @@ async function getCommentPostSlug(commentId: string) {
   return { slug: post.slug, supabase };
 }
 
-export async function hideComment(formData: FormData) {
+async function hideComment(formData: FormData) {
   const { profile } = await getAdminContext();
   const id = getRequiredString(formData, "id");
 
@@ -421,7 +440,7 @@ export async function hideComment(formData: FormData) {
   revalidatePath(`/dirty-news/${slug}`);
 }
 
-export async function restoreComment(formData: FormData) {
+async function restoreComment(formData: FormData) {
   const id = getRequiredString(formData, "id");
 
   if (isKvContentBackend()) {
@@ -451,7 +470,8 @@ export async function restoreComment(formData: FormData) {
   revalidatePath(`/dirty-news/${slug}`);
 }
 
-export async function deleteComment(formData: FormData) {
+async function deleteComment(formData: FormData) {
+  await getAdminContext();
   const id = getRequiredString(formData, "id");
 
   if (isKvContentBackend()) {
@@ -474,28 +494,27 @@ export async function deleteComment(formData: FormData) {
   revalidatePath(`/dirty-news/${slug}`);
 }
 
-export async function updateHomeSettings(formData: FormData) {
+async function updateHomeSettings(formData: FormData) {
   await getAdminContext();
   await updateKvHomeSettings(formData);
   revalidatePath("/");
   revalidatePath("/signal-control");
 }
 
-export async function savePost(formData: FormData) {
+async function savePost(formData: FormData) {
   await getAdminContext();
-  await upsertKvPost(formData);
-  revalidatePath("/dirty-news");
-  revalidatePath("/signal-control");
+  const post = await upsertKvPost(formData);
+  revalidateNews();
+  return postFeedback(post, false);
 }
 
-export async function deletePost(formData: FormData) {
+async function deletePost(formData: FormData) {
   await getAdminContext();
   await deleteKvPost(getRequiredString(formData, "id"));
-  revalidatePath("/dirty-news");
-  revalidatePath("/signal-control");
+  revalidateNews();
 }
 
-export async function saveVideo(formData: FormData) {
+async function saveVideo(formData: FormData) {
   await getAdminContext();
   await upsertKvVideo(formData);
   revalidatePath("/");
@@ -503,10 +522,73 @@ export async function saveVideo(formData: FormData) {
   revalidatePath("/signal-control");
 }
 
-export async function deleteVideo(formData: FormData) {
+async function deleteVideo(formData: FormData) {
   await getAdminContext();
   await deleteKvVideo(getRequiredString(formData, "id"));
   revalidatePath("/");
   revalidatePath("/dirty-tv");
   revalidatePath("/signal-control");
+}
+
+function revalidateNews() {
+  revalidatePath("/");
+  revalidatePath("/dirty-news");
+  revalidatePath("/dirty-news/[slug]", "page");
+  revalidatePath("/signal-control");
+}
+
+function postFeedback(post: Pick<KvDirtyNewsPost, "id" | "status" | "slug" | "published_at"> | null, alreadyReviewed: boolean): SignalControlFeedback {
+  if (!post) {
+    return { message: "This submission has already been reviewed.", href: "#review-history", linkLabel: "Open Review History" };
+  }
+  if (post.status === "published" && post.published_at && Date.parse(post.published_at) <= Date.now()) {
+    return {
+      message: alreadyReviewed ? "Already published. The existing post is still live." : "Published to Dirty News.",
+      href: `/dirty-news/${encodeURIComponent(post.slug)}`,
+      linkLabel: "View public post"
+    };
+  }
+  const message = post.status === "draft" ? "Draft saved in Live Files." :
+    post.status === "archived" ? "File archived and removed from the public feed." : "Publication scheduled.";
+  return { message, href: `#post-${post.id}`, linkLabel: "Find in Live Files" };
+}
+
+const adminActions = new Map<string, [(formData: FormData) => Promise<void>, string]>([
+  ["save-signal", [updateContactSubmission, "Signal saved."]],
+  ["delete-signal", [deleteContactSubmission, "Signal deleted."]],
+  ["delete-submission", [deletePostSubmission, "Submission deleted."]],
+  ["hide-comment", [hideComment, "Comment hidden from the public thread."]],
+  ["restore-comment", [restoreComment, "Comment restored to the public thread."]],
+  ["delete-comment", [deleteComment, "Comment deleted."]],
+  ["save-home", [updateHomeSettings, "Homepage copy saved."]],
+  ["delete-post", [deletePost, "Dirty News file deleted."]],
+  ["save-video", [saveVideo, "Video saved."]],
+  ["delete-video", [deleteVideo, "Video removed from the active shelf."]]
+]);
+
+export async function submitSignalControlAction(_previous: SignalControlFeedback | null, formData: FormData): Promise<SignalControlFeedback> {
+  try {
+    const operation = getRequiredString(formData, "operation");
+    if (operation === "review-news") {
+      const intent = formData.get("intent");
+      if (intent === "draft" || intent === "publish") return await publishPostSubmission(intent, formData);
+      await updatePostSubmission(formData);
+      const moved = formData.get("status") === "rejected" || formData.get("status") === "archived";
+      return moved ? { message: "Review saved and moved to Review History.", href: "#review-history", linkLabel: "Open Review History" } :
+        { message: "Submission edits saved in the queue." };
+    }
+    if (operation === "convert-signal") return await convertContactToDirtyNewsSubmission(formData);
+    if (operation === "save-post") return await savePost(formData);
+    const action = adminActions.get(operation);
+    if (!action) throw new SignalControlFormError("That Signal Control action is unavailable.");
+    if (operation.startsWith("delete-") && formData.get("confirmed") !== "yes") {
+      throw new SignalControlFormError("Confirm the deletion before continuing.");
+    }
+    await action[0](formData);
+    return { message: action[1] };
+  } catch (error) {
+    if (error instanceof SignalControlFormError) return { error: true, message: error.message };
+    console.error("Signal Control action failed.", error);
+    return { error: true, message: "Signal Control could not confirm the change. Check the record before retrying." };
+  }
 }

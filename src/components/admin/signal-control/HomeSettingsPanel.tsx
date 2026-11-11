@@ -1,9 +1,9 @@
-import { updateHomeSettings } from "@/app/signal-control/actions";
+import { SignalControlForm } from "./SignalControlForms";
 import { adminFieldBase, type KvHomeSettings } from "./shared";
 
 export function HomeSettingsPanel({ settings }: { settings: KvHomeSettings }) {
   return (
-    <form action={updateHomeSettings} className="archive-card grid gap-3">
+    <SignalControlForm operation="save-home" className="archive-card grid gap-3">
       <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
         <label className="grid gap-1">
           <span className="font-utility text-[0.68rem] font-black uppercase text-dirty-yellow">
@@ -33,6 +33,6 @@ export function HomeSettingsPanel({ settings }: { settings: KvHomeSettings }) {
       <button className="button button-primary justify-self-start" type="submit">
         Save Front Signal
       </button>
-    </form>
+    </SignalControlForm>
   );
 }

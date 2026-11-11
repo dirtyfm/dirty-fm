@@ -1,4 +1,4 @@
-import { deleteVideo, saveVideo } from "@/app/signal-control/actions";
+import { SignalControlForm } from "./SignalControlForms";
 import { adminFieldBase, type KvAdminVideo } from "./shared";
 
 export function VideoEditorList({ videos }: { videos: KvAdminVideo[] }) {
@@ -8,7 +8,7 @@ export function VideoEditorList({ videos }: { videos: KvAdminVideo[] }) {
     <div className="grid gap-4">
       {[null, ...videos].map((video, index) => (
         <article className="archive-card" key={video?.id ?? "new-video"}>
-          <form action={saveVideo} className="grid gap-3">
+      <SignalControlForm operation="save-video" className="grid gap-3">
             {video ? <input name="id" type="hidden" value={video.id} /> : null}
             <p className="card-label">{video ? "Edit Video File" : "Create Video File"}</p>
             <div className="grid gap-3 min-[760px]:grid-cols-[minmax(0,1fr)_12rem_11rem]">
@@ -33,12 +33,12 @@ export function VideoEditorList({ videos }: { videos: KvAdminVideo[] }) {
             <button className="button button-secondary justify-self-start" type="submit">
               {video ? "Save Video" : "File New Video"}
             </button>
-          </form>
+      </SignalControlForm>
           {video ? (
-            <form action={deleteVideo} className="mt-3">
+        <SignalControlForm operation="delete-video" confirmation="Remove this video from the active shelf?" className="mt-3">
               <input name="id" type="hidden" value={video.id} />
               <button className="danger-link" type="submit">Delete Video</button>
-            </form>
+        </SignalControlForm>
           ) : null}
         </article>
       ))}

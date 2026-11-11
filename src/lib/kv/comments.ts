@@ -2,7 +2,7 @@ import { getPublishedPosts } from "../../data/posts.ts";
 import { validateComment, type CommentInput } from "../contentValidation.ts";
 import { mapVisiblePublicComments } from "../db/commentMapping.ts";
 import { readJsonKey, writeJsonKey, deleteJsonKey } from "./store.ts";
-import type { KvComment, KvDirtyNewsPost } from "./types.ts";
+import type { KvComment, KvPostFile } from "./types.ts";
 import { addToIndex, readMany, removeFromIndex } from "./indexes.ts";
 import { createId, keyFor, keys, nowIso } from "./keys.ts";
 
@@ -51,8 +51,8 @@ export async function getKvPostSlugForComment(commentId: string) {
   const comment = await readJsonKey<KvComment | null>(keyFor("comments", commentId), null);
   if (!comment) return null;
 
-  const post = await readJsonKey<KvDirtyNewsPost | null>(keyFor("posts", comment.post_id), null);
-  if (post) return post.slug;
+  const post = await readJsonKey<KvPostFile | null>(keyFor("posts", comment.post_id), null);
+  if (post && !("deleted" in post)) return post.slug;
 
   return getPublishedPosts().find((item) => item.id === comment.post_id)?.slug ?? null;
 }

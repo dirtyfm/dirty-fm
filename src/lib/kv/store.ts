@@ -9,6 +9,11 @@ export type DirtyKvNamespace = {
   delete(key: string): Promise<void>;
   get<T = JsonValue>(key: string, type: "json"): Promise<T | null>;
   get(key: string): Promise<string | null>;
+  list(options: { prefix: string; cursor?: string }): Promise<{
+    keys: { name: string }[];
+    list_complete: boolean;
+    cursor?: string;
+  }>;
   put(key: string, value: string): Promise<void>;
 };
 
@@ -35,6 +40,12 @@ const memoryNamespace: DirtyKvNamespace = {
   },
   async put(key, value) {
     memoryKv.set(key, value);
+  },
+  async list({ prefix }) {
+    return {
+      keys: [...memoryKv.keys()].filter((key) => key.startsWith(prefix)).map((name) => ({ name })),
+      list_complete: true
+    };
   }
 };
 
@@ -60,10 +71,10 @@ function createCloudflareKvRestNamespace(
   env: CloudflareKvRestEnv,
   fetcher: typeof fetch = fetch
 ): DirtyKvNamespace {
-  const baseUrl = `https://api.cloudflare.com/client/v4/accounts/${env.accountId}/storage/kv/namespaces/${env.namespaceId}/values`;
+  const baseUrl = `https://api.cloudflare.com/client/v4/accounts/${env.accountId}/storage/kv/namespaces/${env.namespaceId}`;
 
   function keyUrl(key: string) {
-    return `${baseUrl}/${encodeURIComponent(key)}`;
+    return `${baseUrl}/values/${encodeURIComponent(key)}`;
   }
 
   async function request(key: string, init?: RequestInit) {
@@ -150,6 +161,27 @@ function createCloudflareKvRestNamespace(
 
       return value as T | null;
     },
+    async list({ prefix, cursor }) {
+      const params = new URLSearchParams({ prefix });
+      if (cursor) params.set("cursor", cursor);
+      const response = await fetcher(`${baseUrl}/keys?${params}`, {
+        headers: { Authorization: `Bearer ${env.apiToken}` }
+      });
+      await assertOk(response, "list", prefix);
+      const payload = await response.json() as {
+        success: boolean;
+        result?: { name: string }[];
+        result_info?: { cursor?: string };
+      };
+      if (!payload.success || !Array.isArray(payload.result)) {
+        throw new Error(`Cloudflare KV list failed for ${prefix}.`);
+      }
+      return {
+        keys: payload.result,
+        list_complete: !payload.result_info?.cursor,
+        cursor: payload.result_info?.cursor
+      };
+    },
     async put(key, value) {
       const response = await request(key, {
         body: value,
@@ -207,6 +239,27 @@ export const __test = {
 export async function readJsonKey<T>(key: string, fallback: T): Promise<T> {
   const namespace = await getDirtyfmKvNamespace();
   return readJsonKeyFromNamespace(namespace, key, fallback);
+}
+
+export async function listJsonRecords<T>(prefix: string): Promise<T[]> {
+  const namespace = await getDirtyfmKvNamespace();
+  const records: T[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await namespace.list({ prefix, cursor });
+    for (let start = 0; start < page.keys.length; start += 12) {
+      const batch = await Promise.all(page.keys.slice(start, start + 12).map(({ name }) =>
+        namespace.get<T>(name, "json")
+      ));
+      for (const record of batch) {
+        if (record !== null) records.push(record);
+      }
+    }
+    if (page.list_complete) return records;
+    if (!page.cursor || page.cursor === cursor) throw new Error(`Invalid KV list cursor for ${prefix}.`);
+    cursor = page.cursor;
+  } while (cursor);
+  return records;
 }
 
 async function readJsonKeyFromNamespace<T>(

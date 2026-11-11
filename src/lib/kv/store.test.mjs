@@ -74,6 +74,20 @@ describe("Cloudflare KV REST adapter", () => {
     assert.equal(await namespace.get("content:missing", "json"), null);
   });
 
+  it("lists keys by prefix and carries the pagination cursor", async () => {
+    const calls = [];
+    const namespace = __test.createCloudflareKvRestNamespace(env, async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({ success: true, result: [{ name: "content:posts:file-1" }], result_info: { cursor: "next page" } });
+    });
+    const page = await namespace.list({ prefix: "content:posts:file-", cursor: "previous page" });
+    assert.equal(new URL(calls[0].url).pathname, "/client/v4/accounts/account-123/storage/kv/namespaces/namespace-456/keys");
+    assert.equal(new URL(calls[0].url).searchParams.get("prefix"), "content:posts:file-");
+    assert.equal(new URL(calls[0].url).searchParams.get("cursor"), "previous page");
+    assert.equal(calls[0].init.headers.Authorization, "Bearer token-abc");
+    assert.deepEqual(page, { keys: [{ name: "content:posts:file-1" }], list_complete: false, cursor: "next page" });
+  });
+
   it("writes plain values with auth and content type", async () => {
     const calls = [];
     const namespace = __test.createCloudflareKvRestNamespace(env, async (url, init) => {

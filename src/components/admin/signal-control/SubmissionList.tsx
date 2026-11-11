@@ -1,21 +1,14 @@
-import {
-  deletePostSubmission,
-  publishPostSubmission,
-  updatePostSubmission
-} from "@/app/signal-control/actions";
 import { postSubmissionCategories } from "@/lib/contentValidation";
 import type { AdminDashboardPostSubmission } from "@/lib/db/adminDashboard";
 import { postSubmissionStatuses } from "@/lib/submissionWorkflows";
 import { EmptyWire } from "./EmptyWire";
+import { SignalControlForm } from "./SignalControlForms";
 import { adminFieldBase, excerpt, formatDate } from "./shared";
 
 export function SubmissionList({ submissions }: { submissions: AdminDashboardPostSubmission[] }) {
   if (submissions.length === 0) {
     return <EmptyWire label="pending Dirty News submissions" />;
   }
-
-  const approveDraft = publishPostSubmission.bind(null, "draft");
-  const publishFile = publishPostSubmission.bind(null, "publish");
 
   return (
     <div className="grid gap-3">
@@ -34,7 +27,7 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
               Source Wire
             </a>
           ) : null}
-          <form action={updatePostSubmission} className="mt-4 grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-4">
+          <SignalControlForm operation="review-news" className="mt-4 grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-4">
             <input name="id" type="hidden" value={submission.id} />
             <input name="name" type="hidden" value={submission.name} />
             <input name="email" type="hidden" value={submission.email} />
@@ -62,7 +55,7 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
                   Status
                 </span>
                 <select className={adminFieldBase} defaultValue={submission.status} name="status">
-                  {postSubmissionStatuses.map((status) => (
+                  {postSubmissionStatuses.filter((status) => status !== "draft" && status !== "published").map((status) => (
                     <option key={status} value={status}>
                       {status}
                     </option>
@@ -105,23 +98,23 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="button button-secondary" type="submit">
+              <button className="button button-secondary" type="submit" name="intent" value="save">
                 Save Edit
               </button>
-              <button className="button button-secondary" formAction={approveDraft} type="submit">
+              <button className="button button-secondary" type="submit" name="intent" value="draft">
                 Approve as Draft
               </button>
-              <button className="button button-primary" formAction={publishFile} type="submit">
+              <button className="button button-primary" type="submit" name="intent" value="publish">
                 Publish File
               </button>
             </div>
-          </form>
-          <form action={deletePostSubmission} className="mt-3">
+          </SignalControlForm>
+          <SignalControlForm operation="delete-submission" confirmation="Permanently delete this submission?" className="mt-3">
             <input name="id" type="hidden" value={submission.id} />
             <button className="danger-link" type="submit">
               Delete if Needed
             </button>
-          </form>
+          </SignalControlForm>
         </article>
       ))}
     </div>

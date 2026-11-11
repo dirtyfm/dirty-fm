@@ -68,6 +68,7 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 min-[760px]:mx-0 min-[760px]:flex-wrap min-[760px]:overflow-visible min-[760px]:px-0 min-[760px]:pb-0">
           <DirtyButton
+            aria-current={!selectedCategory ? "page" : undefined}
             href="/dirty-tv"
             variant={!selectedCategory ? "primary" : "ghost"}
           >
@@ -75,6 +76,7 @@ export default async function DirtyTVPage({ searchParams }: DirtyTVPageProps) {
           </DirtyButton>
           {categories.map((category) => (
             <DirtyButton
+              aria-current={selectedCategory === category ? "page" : undefined}
               href={`/dirty-tv?category=${encodeURIComponent(category)}`}
               key={category}
               variant={selectedCategory === category ? "primary" : "ghost"}

@@ -1,12 +1,8 @@
-import {
-  convertContactToDirtyNewsSubmission,
-  deleteContactSubmission,
-  updateContactSubmission
-} from "@/app/signal-control/actions";
 import { postSubmissionCategories } from "@/lib/contentValidation";
 import type { AdminDashboardContact } from "@/lib/db/adminDashboard";
 import { contactSubmissionStatuses } from "@/lib/submissionWorkflows";
 import { EmptyWire } from "./EmptyWire";
+import { SignalControlForm } from "./SignalControlForms";
 import { adminFieldBase, excerpt, formatDate } from "./shared";
 
 export function ContactList({ contacts }: { contacts: AdminDashboardContact[] }) {
@@ -34,7 +30,9 @@ export function ContactList({ contacts }: { contacts: AdminDashboardContact[] })
             {contact.can_read_on_air ? "yes" : "no"}
           </p>
           <p className="mt-3 text-dirty-ash">{excerpt(contact.message)}</p>
-          <form action={convertContactToDirtyNewsSubmission} className="mt-4 grid gap-3 border-t border-[rgba(214,184,74,0.3)] pt-4">
+          {contact.reviewStatus ? (
+            <p className="mt-3 text-dirty-yellow">Dirty News review file · {contact.reviewStatus}</p>
+          ) : <SignalControlForm operation="convert-signal" className="mt-4 grid gap-3 border-t border-[rgba(214,184,74,0.3)] pt-4">
             <input name="id" type="hidden" value={contact.id} />
             {!contact.can_read_on_air ? (
               <p className="border-l-4 border-dirty-yellow bg-dirty-yellow/10 p-3 font-utility text-xs font-black uppercase text-dirty-yellow">
@@ -55,11 +53,11 @@ export function ContactList({ contacts }: { contacts: AdminDashboardContact[] })
                 </select>
               </label>
               <button className="button button-primary" type="submit">
-                Draft Dirty News File
+                Send to Dirty News Review
               </button>
             </div>
-          </form>
-          <form action={updateContactSubmission} className="mt-4 grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-4">
+          </SignalControlForm>}
+          <SignalControlForm operation="save-signal" className="mt-4 grid gap-3 border-t border-[rgba(183,178,168,0.24)] pt-4">
             <input name="id" type="hidden" value={contact.id} />
             <div className="grid gap-3 min-[760px]:grid-cols-[12rem_minmax(0,1fr)_auto] min-[760px]:items-end">
               <label className="grid gap-1">
@@ -89,13 +87,13 @@ export function ContactList({ contacts }: { contacts: AdminDashboardContact[] })
               Save Signal
             </button>
             </div>
-          </form>
-          <form action={deleteContactSubmission} className="mt-3">
+          </SignalControlForm>
+          <SignalControlForm operation="delete-signal" confirmation="Permanently delete this incoming signal?" className="mt-3">
             <input name="id" type="hidden" value={contact.id} />
             <button className="danger-link" type="submit">
               Delete if Needed
             </button>
-          </form>
+          </SignalControlForm>
         </article>
       ))}
     </div>

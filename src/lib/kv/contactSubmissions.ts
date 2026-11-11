@@ -1,12 +1,14 @@
 import { validateContactSubmission, validatePostSubmission, type ContactSubmissionInput } from "../contentValidation.ts";
 import { createDirtyNewsDraftFromContact } from "../contactToDirtyNews.ts";
 import type { ContactSubmissionStatus } from "../db/types.ts";
+import { SignalControlFormError } from "../signalControlFeedback.ts";
 import { cleanAdminNotes } from "../submissionWorkflows.ts";
 import { createKvContactSubmissionRecord } from "./contactSubmissionCore.ts";
-import { readJsonKey, writeJsonKey, deleteJsonKey } from "./store.ts";
+import { getDirtyfmKvNamespace, readJsonKey, writeJsonKey, deleteJsonKey } from "./store.ts";
 import type { KvContactSubmission, KvPostSubmission } from "./types.ts";
-import { addToIndex, removeFromIndex } from "./indexes.ts";
+import { addToIndex, readMany, removeFromIndex } from "./indexes.ts";
 import { createId, keyFor, keys, nowIso } from "./keys.ts";
+import { contactReviewId } from "./postSubmissions.ts";
 
 export async function createKvContactSubmission(input: ContactSubmissionInput) {
   const validated = validateContactSubmission(input);
@@ -28,7 +30,7 @@ export async function createKvContactSubmission(input: ContactSubmissionInput) {
 
 export async function updateKvContactSubmission(id: string, status: ContactSubmissionStatus, adminNotes: FormDataEntryValue | null, profileId: string) {
   const existing = await readJsonKey<KvContactSubmission | null>(keyFor("contact-submissions", id), null);
-  if (!existing) throw new Error("Contact submission not found.");
+  if (!existing) throw new SignalControlFormError("Contact submission not found.");
   await writeJsonKey(keyFor("contact-submissions", id), {
     ...existing,
     admin_notes: cleanAdminNotes(adminNotes),
@@ -39,13 +41,26 @@ export async function updateKvContactSubmission(id: string, status: ContactSubmi
   });
 }
 
-export async function convertKvContactToPostSubmission(id: string, category: unknown, profileId: string) {
-  const existing = await readJsonKey<KvContactSubmission | null>(keyFor("contact-submissions", id), null);
-  if (!existing) throw new Error("Contact submission not found.");
+export async function convertKvContactToPostSubmission(id: string, category: unknown) {
+  const namespace = await getDirtyfmKvNamespace();
+  const contactKey = keyFor("contact-submissions", id);
+  const reviewId = contactReviewId(id);
+  const reviewKey = keyFor("post-submissions", reviewId);
+  const [existing, converted] = await Promise.all([
+    namespace.get<KvContactSubmission>(contactKey, "json"),
+    namespace.get<KvPostSubmission>(reviewKey, "json")
+  ]);
+  if (!existing) throw new SignalControlFormError("Contact submission not found.");
+  if (converted) return { submission: converted, alreadyConverted: true };
+  if (existing.status !== "pending") {
+    const earlier = await readMany<KvPostSubmission>(keys.postSubmissionsIndex, (itemId) => keyFor("post-submissions", itemId));
+    const match = earlier.find((item) => item.admin_notes?.startsWith(`Converted from contact signal ${id}.`));
+    if (match) return { submission: match, alreadyConverted: true };
+  }
 
   const draft = createDirtyNewsDraftFromContact(existing, category);
   const validated = validatePostSubmission(draft);
-  if (!validated.ok) throw new Error(Object.values(validated.errors).join(" "));
+  if (!validated.ok) throw new SignalControlFormError(Object.values(validated.errors).join(" "));
 
   const timestamp = nowIso();
   const postSubmission: KvPostSubmission = {
@@ -54,7 +69,7 @@ export async function convertKvContactToPostSubmission(id: string, category: unk
     category: validated.data.category,
     created_at: timestamp,
     email: validated.data.email,
-    id: createId("submission"),
+    id: reviewId,
     name: validated.data.name,
     reviewed_at: null,
     reviewed_by: null,
@@ -64,17 +79,14 @@ export async function convertKvContactToPostSubmission(id: string, category: unk
     updated_at: timestamp
   };
 
-  await writeJsonKey(keyFor("post-submissions", postSubmission.id), postSubmission);
-  await addToIndex(keys.postSubmissionsIndex, postSubmission.id);
-  await writeJsonKey(keyFor("contact-submissions", id), {
-    ...existing,
-    reviewed_at: timestamp,
-    reviewed_by: profileId,
-    status: "approved",
-    updated_at: timestamp
-  });
-
-  return postSubmission;
+  try {
+    await namespace.put(reviewKey, JSON.stringify(postSubmission));
+  } catch (error) {
+    const current = await namespace.get<KvPostSubmission>(reviewKey, "json");
+    if (!current) throw error;
+    return { submission: current, alreadyConverted: true };
+  }
+  return { submission: postSubmission, alreadyConverted: false };
 }
 
 export async function deleteKvContactSubmission(id: string) {

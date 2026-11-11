@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { isKvContentBackend } from "@/lib/contentBackend";
 import { createSupabaseServerClient } from "@/lib/db/supabase";
 import type { Database } from "@/lib/db/types";
+import { isPendingPostReview } from "@/lib/submissionWorkflows";
 import { getExactCount, mapCommentsToPostTitles } from "@/lib/db/adminDashboardUtils";
 import { getKvAdminDashboardData } from "@/lib/kv/contentStore";
 
@@ -18,7 +19,7 @@ export type AdminDashboardContact = Pick<
   | "admin_notes"
   | "can_read_on_air"
   | "created_at"
->;
+> & { reviewStatus?: AdminDashboardPostSubmission["status"] };
 
 export type AdminDashboardPostSubmission = Pick<
   Database["public"]["Tables"]["post_submissions"]["Row"],
@@ -32,7 +33,7 @@ export type AdminDashboardPostSubmission = Pick<
   | "status"
   | "admin_notes"
   | "created_at"
->;
+> & { postSlug?: string; postId?: string };
 
 export type AdminDashboardPost = Pick<
   Database["public"]["Tables"]["posts"]["Row"],
@@ -67,6 +68,7 @@ export type AdminDashboardData = {
     recentComments: number;
   };
   postSubmissions: AdminDashboardPostSubmission[];
+  reviewedSubmissions: AdminDashboardPostSubmission[];
   posts: AdminDashboardPost[];
 };
 
@@ -112,7 +114,6 @@ export async function getAdminDashboardData(
 
   const [
     contactSubmissions,
-    pendingDirtyNews,
     publishedPosts,
     recentComments,
     contactsResult,
@@ -121,7 +122,6 @@ export async function getAdminDashboardData(
     commentsResult
   ] = await Promise.all([
     getCount(supabase, "contact_submissions", "status", "pending"),
-    getCount(supabase, "post_submissions", "status", "pending"),
     getCount(supabase, "posts", "status", "published"),
     getCount(supabase, "comments", "is_hidden", false),
     supabase
@@ -134,13 +134,11 @@ export async function getAdminDashboardData(
     supabase
       .from("post_submissions")
       .select("id, name, email, title, category, body, source_url, status, admin_notes, created_at")
-      .order("created_at", { ascending: false })
-      .limit(8),
+      .order("created_at", { ascending: false }),
     supabase
       .from("posts")
       .select("id, title, slug, excerpt, body, category, author, featured_image_url, status, published_at, created_at")
-      .order("published_at", { ascending: false, nullsFirst: false })
-      .limit(8),
+      .order("published_at", { ascending: false, nullsFirst: false }),
     supabase
       .from("comments")
       .select("id, post_id, author_name, author_email, body, is_hidden, created_at")
@@ -185,11 +183,12 @@ export async function getAdminDashboardData(
     contacts,
     counts: {
       contactSubmissions,
-      pendingDirtyNews,
+      pendingDirtyNews: postSubmissions.filter((item) => isPendingPostReview(item.status)).length,
       publishedPosts,
       recentComments
     },
-    postSubmissions,
+    postSubmissions: postSubmissions.filter((item) => isPendingPostReview(item.status)),
+    reviewedSubmissions: postSubmissions.filter((item) => !isPendingPostReview(item.status)),
     posts
   };
 }
