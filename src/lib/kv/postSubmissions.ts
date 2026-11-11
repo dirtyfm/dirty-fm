@@ -1,8 +1,22 @@
 import { validatePostSubmission, type PostSubmissionInput } from "../contentValidation.ts";
-import { deleteJsonKey, writeJsonKey } from "./store.ts";
+import { deleteJsonKey, listJsonRecords, writeJsonKey } from "./store.ts";
 import type { KvPostSubmission } from "./types.ts";
-import { addToIndex, removeFromIndex } from "./indexes.ts";
+import { addToIndex, readMany, removeFromIndex } from "./indexes.ts";
 import { createId, keyFor, keys, nowIso } from "./keys.ts";
+
+const convertedSubmissionPrefix = "submission-from-";
+
+export function contactReviewId(contactId: string) {
+  return `${convertedSubmissionPrefix}${contactId}`;
+}
+
+export async function getKvPostSubmissionRecords() {
+  const [indexed, converted] = await Promise.all([
+    readMany<KvPostSubmission>(keys.postSubmissionsIndex, (id) => keyFor("post-submissions", id)),
+    listJsonRecords<KvPostSubmission>(keyFor("post-submissions", convertedSubmissionPrefix))
+  ]);
+  return [...indexed, ...converted];
+}
 
 export async function createKvPostSubmission(input: PostSubmissionInput) {
   const validated = validatePostSubmission(input);
@@ -34,5 +48,5 @@ export async function createKvPostSubmission(input: PostSubmissionInput) {
 
 export async function deleteKvPostSubmission(id: string) {
   await deleteJsonKey(keyFor("post-submissions", id));
-  await removeFromIndex(keys.postSubmissionsIndex, id);
+  if (!id.startsWith(convertedSubmissionPrefix)) await removeFromIndex(keys.postSubmissionsIndex, id);
 }

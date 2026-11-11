@@ -1,6 +1,6 @@
-import { deleteComment, hideComment, restoreComment } from "@/app/signal-control/actions";
 import type { AdminDashboardComment } from "@/lib/db/adminDashboard";
 import { EmptyWire } from "./EmptyWire";
+import { SignalControlForm } from "./SignalControlForms";
 import { excerpt, formatDate } from "./shared";
 
 export function CommentList({ comments }: { comments: AdminDashboardComment[] }) {
@@ -27,26 +27,26 @@ export function CommentList({ comments }: { comments: AdminDashboardComment[] })
           <p className="mt-3 text-dirty-ash">{excerpt(comment.body)}</p>
           <div className="mt-4 flex flex-wrap gap-2 border-t border-[rgba(183,178,168,0.24)] pt-4">
             {comment.is_hidden ? (
-              <form action={restoreComment}>
+                <SignalControlForm operation="restore-comment">
                 <input name="id" type="hidden" value={comment.id} />
                 <button className="button button-secondary" type="submit">
                   Restore Comment
                 </button>
-              </form>
+                </SignalControlForm>
             ) : (
-              <form action={hideComment}>
+                <SignalControlForm operation="hide-comment">
                 <input name="id" type="hidden" value={comment.id} />
                 <button className="button button-secondary" type="submit">
                   Hide Comment
                 </button>
-              </form>
+                </SignalControlForm>
             )}
-            <form action={deleteComment}>
+              <SignalControlForm operation="delete-comment" confirmation="Permanently delete this comment?">
               <input name="id" type="hidden" value={comment.id} />
               <button className="danger-link" type="submit">
                 Delete Comment
               </button>
-            </form>
+              </SignalControlForm>
           </div>
         </article>
       ))}

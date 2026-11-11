@@ -11,11 +11,16 @@ export type KvDirtyNewsPost = {
   featured_image_url: string | null;
   id: string;
   published_at: string | null;
+  review_notes?: string | null;
+  review_source_url?: string | null;
+  reviewed_by?: string;
   slug: string;
   status: KvPostStatus;
   title: string;
   updated_at: string;
 };
+
+export type KvPostFile = KvDirtyNewsPost | { id: string; deleted: true };
 
 export type KvContactSubmission = {
   admin_notes: string | null;

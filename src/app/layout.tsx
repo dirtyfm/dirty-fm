@@ -27,8 +27,11 @@ export default function RootLayout({
         />
         <ScrollStareBackground />
         <div className="relative z-10 flex min-h-screen flex-col">
+          <a className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-30 focus:bg-dirty-yellow focus:px-4 focus:py-2 focus:font-bold focus:text-dirty-black" href="#main-content">
+            Skip to main content
+          </a>
           <SiteHeader />
-          <main className="mx-auto w-[min(calc(100%-2rem),1180px)] flex-1 py-10 min-[760px]:w-[min(calc(100%-4rem),1180px)] min-[760px]:py-20">
+          <main id="main-content" tabIndex={-1} className="mx-auto w-[min(calc(100%-2rem),1180px)] flex-1 py-10 min-[760px]:w-[min(calc(100%-4rem),1180px)] min-[760px]:py-20">
             {children}
           </main>
           <SiteFooter />

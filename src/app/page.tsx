@@ -52,11 +52,15 @@ function getPostDateLabel(post: Awaited<ReturnType<typeof getPublicDirtyNewsPost
 }
 
 export default async function Home() {
-  const homeSettings = await getKvHomeSettings();
-  const featuredVideo = await getPublicFeaturedVideo();
-  const currentVideos = (await getPublicVideos()).slice(0, 3);
+  const [homeSettings, featuredVideo, videos, posts] = await Promise.all([
+    getKvHomeSettings(),
+    getPublicFeaturedVideo(),
+    getPublicVideos(),
+    getPublicDirtyNewsPosts()
+  ]);
+  const currentVideos = videos.slice(0, 3);
   const dirtyTvPreviewCards = getArchivedDirtyTvHomePreviewCards();
-  const newsPosts = (await getPublicDirtyNewsPosts()).slice(0, 3).map((post) => ({
+  const newsPosts = posts.slice(0, 3).map((post) => ({
     title: post.title,
     excerpt: post.excerpt,
     href: `/dirty-news/${post.slug}`,

@@ -33,11 +33,15 @@ export function isPostSubmissionStatus(value: unknown): value is PostSubmissionS
   );
 }
 
+export function isPendingPostReview(status: PostSubmissionStatus) {
+  return status === "pending" || status === "approved";
+}
+
 export function cleanAdminNotes(value: unknown) {
   return typeof value === "string" ? value.trim().slice(0, 4000) || null : null;
 }
 
-export function createDirtyNewsSlug(title: string, fallbackId: string) {
+export function createDirtyNewsSlug(title: string, fallbackId: string, suffixLength = 8) {
   const base = title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -45,7 +49,7 @@ export function createDirtyNewsSlug(title: string, fallbackId: string) {
     .slice(0, 72)
     .replace(/-+$/g, "");
 
-  return `${base || "dirty-news-file"}-${fallbackId.slice(0, 8)}`;
+  return `${base || "dirty-news-file"}-${fallbackId.slice(0, suffixLength)}`;
 }
 
 export function createDirtyNewsExcerpt(body: string, providedExcerpt?: string | null) {
