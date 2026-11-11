@@ -51,22 +51,27 @@ export async function submitDirtyNewsComment(
   input: CommentInput & { honeypot?: string; postSlug: string }
 ): Promise<DirtyNewsCommentActionState> {
   if (checkHoneypot(input.honeypot)) {
-    return { errors: { body: "The static tripped the spam wire." }, ok: false };
+    return { errors: { form: "The comment tripped the spam filter." }, ok: false };
   }
 
   const headersList = await headers();
   const rateLimit = checkPublicRateLimit("comment", getClientIp(headersList));
 
   if (!rateLimit.ok) {
-    return { errors: { body: "Too much static too fast. Wait a minute and try again." }, ok: false };
+    return { errors: { form: "Too much static too fast. Wait a minute and try again." }, ok: false };
   }
 
-  const result = isKvContentBackend()
-    ? await createKvComment(input)
-    : await createComment(createSupabaseServerClient(), input);
+  try {
+    const result = isKvContentBackend()
+      ? await createKvComment(input)
+      : await createComment(createSupabaseServerClient(), input);
 
-  if (!result.ok) {
-    return { errors: result.errors, ok: false };
+    if (!result.ok) {
+      return { errors: result.errors, ok: false };
+    }
+  } catch (error) {
+    console.error("Dirty News comment storage failed.", error);
+    return { errors: { database: "The comment wire is temporarily unavailable. Try again." }, ok: false };
   }
 
   revalidatePath(`/dirty-news/${input.postSlug}`);

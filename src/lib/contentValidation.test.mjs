@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   postSubmissionCategories,
   validateComment,
+  validateCommentFields,
   validateContactSubmission,
   validatePostSubmission
 } from "./contentValidation.ts";
@@ -78,6 +79,22 @@ describe("server-side content validation", () => {
 
     assert.equal(validateComment(input).ok, false);
     assert.equal(validateComment(input, { allowLocalPostId: true }).ok, true);
+  });
+
+  it("accepts the public comment fields independently of a KV article ID", () => {
+    const input = {
+      authorEmail: "",
+      authorName: " Example Caller ",
+      body: "The wires are working again.",
+      postId: "file-review-submission-123e4567-e89b-12d3-a456-426614174000"
+    };
+    const fields = validateCommentFields(input);
+    assert.deepEqual(fields, {
+      data: { authorEmail: undefined, authorName: "Example Caller", body: input.body },
+      ok: true
+    });
+    assert.equal(validateComment({ ...fields.data, postId: input.postId }, { allowLocalPostId: true }).ok, true);
+    assert.equal(validateComment(input).ok, false);
   });
 
   it("rejects comments that blow past the public length limit", () => {
