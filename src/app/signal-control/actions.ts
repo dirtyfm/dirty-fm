@@ -246,10 +246,12 @@ export async function updatePostSubmission(formData: FormData) {
   revalidatePath("/signal-control");
 }
 
-export async function publishPostSubmission(formData: FormData) {
+export async function publishPostSubmission(intent: "draft" | "publish", formData: FormData) {
   const { profile, supabase } = await getAdminContext();
   const id = getRequiredString(formData, "id");
-  const intent = getRequiredString(formData, "intent");
+  if (intent !== "draft" && intent !== "publish") {
+    throw new Error("Invalid Dirty News publication action.");
+  }
   const postStatus = intent === "publish" ? "published" : "draft";
   const submissionStatus = intent === "publish" ? "published" : "draft";
   const author = getRequiredString(formData, "author").slice(0, 120);
