@@ -5,40 +5,41 @@ import { useRouter } from "next/navigation";
 import { submitDirtyNewsComment } from "@/app/dirty-news/actions";
 import { DirtyButton } from "@/components/dirty";
 import { cx } from "@/components/dirty/shared";
-import { validateComment, type CommentInput } from "@/lib/contentValidation";
+import { validateCommentFields, type CommentFields } from "@/lib/contentValidation";
 
 type DirtyNewsCommentFormProps = {
   postId: string;
   postSlug: string;
 };
 
-const emptyValues: CommentInput = {
+const emptyValues: CommentFields = {
   authorEmail: "",
   authorName: "",
-  body: "",
-  postId: ""
+  body: ""
 };
 
 const fieldBase =
-  "w-full border border-[rgba(183,178,168,0.34)] bg-dirty-black/70 px-3 py-3 text-base text-dirty-ash shadow-[inset_0_0_0_1px_rgba(0,0,0,0.32)] outline-none transition-colors placeholder:text-dirty-gray/55 focus:border-dirty-yellow";
+  "w-full border border-[rgba(183,178,168,0.34)] bg-dirty-black/70 px-3 py-3 text-base text-dirty-ash shadow-[inset_0_0_0_1px_rgba(0,0,0,0.32)] outline-none transition-colors placeholder:text-dirty-gray/55 focus:border-dirty-yellow aria-invalid:border-dirty-red";
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) {
     return null;
   }
 
-  return <p className="font-utility text-xs font-bold uppercase text-dirty-red">{message}</p>;
+  return <p className="font-utility text-xs font-bold uppercase text-dirty-red" id={id}>{message}</p>;
 }
 
 export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormProps) {
   const router = useRouter();
-  const [values, setValues] = useState<CommentInput>({ ...emptyValues, postId });
+  const [values, setValues] = useState<CommentFields>(emptyValues);
   const [honeypot, setHoneypot] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [isPending, startTransition] = useTransition();
+  const formError = errors.form ?? errors.postId ?? errors.database;
+  const hasFieldError = Boolean(errors.authorName || errors.authorEmail || errors.body);
 
-  function updateField(field: keyof CommentInput, value: string) {
+  function updateField(field: keyof CommentFields, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => {
       if (!current[field]) {
@@ -54,7 +55,7 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const validated = validateComment(values);
+    const validated = validateCommentFields(values);
 
     if (!validated.ok) {
       setErrors(validated.errors);
@@ -67,6 +68,7 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
         const result = await submitDirtyNewsComment({
           ...validated.data,
           honeypot,
+          postId,
           postSlug
         });
 
@@ -76,11 +78,13 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
           return;
         }
 
-        setValues({ ...emptyValues, postId });
+        setValues(emptyValues);
         setHoneypot("");
+        setErrors({});
         setStatus("success");
         router.refresh();
       } catch {
+        setErrors({ database: "The comment wire is temporarily unavailable. Try again." });
         setStatus("error");
       }
     });
@@ -105,13 +109,8 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
             Comment jammed.
           </p>
           <p className="mt-2 text-sm text-dirty-gray">
-            Fix the marked fields and send the noise again.
+            {formError ?? (hasFieldError ? "Fix the marked fields and send the noise again." : "Try sending the comment again.")}
           </p>
-          {errors.database ? (
-            <p className="mt-2 font-utility text-xs font-bold uppercase text-dirty-yellow">
-              {errors.database}
-            </p>
-          ) : null}
         </div>
       ) : null}
 
@@ -121,6 +120,8 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
             Name / Alias
           </span>
           <input
+            aria-describedby={errors.authorName ? "comment-name-error" : undefined}
+            aria-invalid={Boolean(errors.authorName)}
             className={fieldBase}
             maxLength={120}
             name="authorName"
@@ -129,7 +130,7 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
             type="text"
             value={values.authorName}
           />
-          <FieldError message={errors.authorName} />
+          <FieldError id="comment-name-error" message={errors.authorName} />
         </label>
 
         <label className="grid gap-2">
@@ -137,6 +138,8 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
             Email <span className="text-dirty-gray">(Optional)</span>
           </span>
           <input
+            aria-describedby={errors.authorEmail ? "comment-email-error" : undefined}
+            aria-invalid={Boolean(errors.authorEmail)}
             className={fieldBase}
             maxLength={254}
             name="authorEmail"
@@ -145,7 +148,7 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
             type="email"
             value={values.authorEmail ?? ""}
           />
-          <FieldError message={errors.authorEmail} />
+          <FieldError id="comment-email-error" message={errors.authorEmail} />
         </label>
       </div>
 
@@ -166,6 +169,8 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
           Comment
         </span>
         <textarea
+          aria-describedby={errors.body ? "comment-body-error" : undefined}
+          aria-invalid={Boolean(errors.body)}
           className={cx(fieldBase, "min-h-36 resize-y leading-relaxed")}
           maxLength={4000}
           name="body"
@@ -174,7 +179,7 @@ export function DirtyNewsCommentForm({ postId, postSlug }: DirtyNewsCommentFormP
           value={values.body}
         />
         <div className="flex flex-col gap-1 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between">
-          <FieldError message={errors.body} />
+          <FieldError id="comment-body-error" message={errors.body} />
           <p className="font-utility text-xs font-bold uppercase text-dirty-gray">
             {values.body.length}/4000
           </p>

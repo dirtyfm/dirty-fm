@@ -29,12 +29,13 @@ export type PostSubmissionInput = {
   sourceUrl?: string;
 };
 
-export type CommentInput = {
-  postId: string;
+export type CommentFields = {
   authorName: string;
   authorEmail?: string;
   body: string;
 };
+
+export type CommentInput = CommentFields & { postId: string };
 
 type CommentValidationOptions = {
   allowLocalPostId?: boolean;
@@ -203,27 +204,15 @@ export function validatePostSubmission(
   return { data, ok: true };
 }
 
-export function validateComment(
-  input: CommentInput,
-  options: CommentValidationOptions = {}
-): ValidationResult<CommentInput> {
+export function validateCommentFields(input: CommentFields): ValidationResult<CommentFields> {
   const errors: Record<string, string> = {};
   const trimmedAuthorName = input.authorName.trim();
   const trimmedBody = input.body.trim();
   const data = {
     authorEmail: input.authorEmail ? cleanText(input.authorEmail, 254).toLowerCase() : undefined,
     authorName: cleanText(input.authorName, 120),
-    body: cleanLongText(input.body, 4000),
-    postId: input.postId.trim()
+    body: cleanLongText(input.body, 4000)
   };
-
-  const hasValidPostId = options.allowLocalPostId
-    ? localPostIdPattern.test(data.postId)
-    : uuidPattern.test(data.postId);
-
-  if (!hasValidPostId) {
-    errors.postId = "Comments must attach to a real post file.";
-  }
 
   if (!data.authorName) {
     errors.authorName = "Name or alias is required.";
@@ -246,4 +235,24 @@ export function validateComment(
   }
 
   return { data, ok: true };
+}
+
+export function validateComment(
+  input: CommentInput,
+  options: CommentValidationOptions = {}
+): ValidationResult<CommentInput> {
+  const fields = validateCommentFields(input);
+  const postId = input.postId.trim();
+  const postIdPattern = options.allowLocalPostId ? localPostIdPattern : uuidPattern;
+  if (!postIdPattern.test(postId)) {
+    return {
+      errors: {
+        ...(fields.ok ? {} : fields.errors),
+        postId: "This comment could not be attached to the article. Reload the page and try again."
+      },
+      ok: false
+    };
+  }
+
+  return fields.ok ? { data: { ...fields.data, postId }, ok: true } : fields;
 }
