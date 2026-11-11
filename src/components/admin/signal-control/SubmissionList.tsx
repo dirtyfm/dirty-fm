@@ -14,6 +14,9 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
     return <EmptyWire label="pending Dirty News submissions" />;
   }
 
+  const approveDraft = publishPostSubmission.bind(null, "draft");
+  const publishFile = publishPostSubmission.bind(null, "publish");
+
   return (
     <div className="grid gap-3">
       {submissions.map((submission) => (
@@ -105,10 +108,10 @@ export function SubmissionList({ submissions }: { submissions: AdminDashboardPos
               <button className="button button-secondary" type="submit">
                 Save Edit
               </button>
-              <button className="button button-secondary" formAction={publishPostSubmission} name="intent" type="submit" value="draft">
+              <button className="button button-secondary" formAction={approveDraft} type="submit">
                 Approve as Draft
               </button>
-              <button className="button button-primary" formAction={publishPostSubmission} name="intent" type="submit" value="publish">
+              <button className="button button-primary" formAction={publishFile} type="submit">
                 Publish File
               </button>
             </div>
